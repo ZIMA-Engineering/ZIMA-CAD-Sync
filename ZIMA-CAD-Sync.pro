@@ -16,14 +16,18 @@ SOURCES += ZIMA-CAD-Sync.cpp\
         MainWindow.cpp \
     src/BaseSynchronizer.cpp \
     src/FtpSynchronizer.cpp \
-    src/Item.cpp
+    src/Item.cpp \
+    src/AboutDialog.cpp
 
 HEADERS  += MainWindow.h \
     src/BaseSynchronizer.h \
     src/FtpSynchronizer.h \
-    src/Item.h
+    src/Item.h \
+    src/AboutDialog.h \
+    src/ZIMA-CAD-Sync.h
 
-FORMS    += MainWindow.ui
+FORMS    += MainWindow.ui \
+    src/AboutDialog.ui
 
 CODECFORTR = UTF-8
 #TRANSLATIONS += locale/ZIMA-CAD-Sync_cs_CZ.ts

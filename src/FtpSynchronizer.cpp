@@ -6,15 +6,19 @@
 
 FtpSynchronizer::FtpSynchronizer(QObject *parent) :
 	BaseSynchronizer(parent),
-	action(None)
+	action(None),
+	ftp(0),
+	filesTotal(0)
 {
 }
 
 void FtpSynchronizer::connectToServer()
 {
-	ftp->connectToHost(host);
-
-	if(!username.isEmpty())
+	if(ftp->state() == QFtp::Unconnected || ftp->state() == QFtp::Closing)
+	{
+		ftp->connectToHost(host);
+		ftp->login(username, passwd);
+	} else if(ftp->state() > QFtp::Unconnected && ftp->state() != QFtp::LoggedIn && !username.isEmpty())
 		ftp->login(username, passwd);
 }
 
@@ -22,26 +26,102 @@ void FtpSynchronizer::syncToLocal()
 {
 	qDebug() << "Ok, syncing to local";
 
-	buildRemoteTree();
+	if(!QFile::exists(dir))
+	{
+		QDir d;
+		d.mkdir(dir);
+	}
 
-	action = Downloading;
+	actions << BuildingTree << Downloading;
 
-	// TODO: download
+	if(deleteFirst)
+		localDeleteAll(localDir);
+
+	filesTotal = 0;
+	filesDone = 0;
+
+	cmdFromQueue();
 }
 
 void FtpSynchronizer::syncToServer()
 {
 	qDebug() << "Ok, syncing to server";
-	action = Uploading;
-	ftp = new QFtp(this);
 
-	connect(ftp, SIGNAL(stateChanged(int)), this, SLOT(stateChange(int)));
-	connect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(uploadCommandFinished(int,bool)));
-	connect(ftp, SIGNAL(done(bool)), this, SLOT(remoteSyncDone()));
+	if(deleteFirst)
+		actions << BuildingTree << RemovingAll;
 
-	connectToServer();
+	actions << Uploading << SettingLastSync;
 
-	uploadDir(localDir, remoteDir);
+	filesTotal = 0;
+	filesDone = 0;
+
+	cmdFromQueue();
+}
+
+void FtpSynchronizer::cmdFromQueue()
+{
+	qDebug() << "queue" << actions;
+
+	if(actions.isEmpty())
+	{
+		action = None;
+
+		qDebug() << "Job done";
+
+		if(ftp)
+		{
+			ftp->close();
+		}
+
+		return;
+	}
+
+	if(ftp && ftp->hasPendingCommands())
+		return;
+
+	action = actions.takeFirst();
+
+	if(!ftp)
+	{
+		ftp = new QFtp(this);
+
+		qDebug() <<"QFtp instance created" << ftp;
+
+		connect(ftp, SIGNAL(stateChanged(int)), this, SLOT(stateChange(int)));
+		connect(ftp, SIGNAL(done(bool)), this, SLOT(commandSequenceDone(bool)));
+	}
+
+	switch(action)
+	{
+	case Checking:
+		qDebug() << "Init check";
+		initCheck();
+		break;
+	case BuildingTree:
+		qDebug() << "Init build tree";
+		buildRemoteTree();
+		break;
+	case RemovingAll:
+		qDebug() << "Init remove all";
+		connectToServer();
+		remoteDeleteAll();
+		break;
+	case Downloading:
+		qDebug() << "Init download";
+		initDownload();
+		break;
+	case Uploading:
+		qDebug() << "Init upload";
+		initUpload();
+		break;
+	case SettingLastSync:
+		qDebug() << "Init set last remote sync";
+		setRemoteLastSync(localLastSync.isNull() ? QDateTime::currentDateTime().toUTC() : localLastSync);
+		break;
+	default:
+		qDebug() << "Unknown action" << action;
+		break;
+	}
 }
 
 void FtpSynchronizer::setRemoteLastSync(QDateTime dt)
@@ -57,7 +137,7 @@ void FtpSynchronizer::setRemoteLastSync(QDateTime dt)
 	{ // Neccessary, we need to destroy this instance
 		QSettings cfg(remoteLastSyncTmp->fileName(), QSettings::IniFormat);
 		cfg.beginGroup("Sync");
-		cfg.setValue("LastSync", QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
+		cfg.setValue("LastSync", QDateTime::currentDateTime().toUTC().toString(Qt::ISODate));
 		cfg.endGroup();
 	}
 
@@ -66,39 +146,37 @@ void FtpSynchronizer::setRemoteLastSync(QDateTime dt)
 	// connect ftp slots, handle commands finish and done
 
 	connect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(lastSyncCommandFinished(int,bool)));
-	connect(ftp, SIGNAL(done(bool)), this, SLOT(lastSyncDone()));
 
 	ftp->put(remoteLastSyncTmp, remoteDir + "/" + DIRECTORY_CONFIG_PATH);
 }
 
 void FtpSynchronizer::checkForUpdates()
 {
-	action = Checking;
+	qDebug() << "Check for update called";
 
-	ftp = new QFtp(this);
-
-	connect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(checkCommandFinished(int,bool)));
-
-	connectToServer();
-
-	updateTmp = new QTemporaryFile("ZIMA-CAD-Sync_XXXXXX", this);
-
-	if(!updateTmp->open())
+	if(action != None)
 	{
-		qDebug() << "Failed to create temp file, skipping update check";
-		return;
+		qDebug() << "Aborting" << action;
+		ftp->abort();
+		disconnect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(checkCommandFinished(int,bool)));
 	}
 
-	updateId = ftp->get(remoteDir + "/" + DIRECTORY_CONFIG_PATH, updateTmp);
+	actions << Checking;
+
+	cmdFromQueue();
+
+	//action = Checking;
+
+	//ftp = new QFtp(this);
 }
 
 void FtpSynchronizer::checkCommandFinished(int id, bool error)
 {
-	qDebug() << "Command finished" << id;
+	qDebug() << "Command finished" << id << ftp;;
 
 	if(error)
 	{
-		qDebug() << "Error during check for update";
+		qDebug() << "Error during check for update" << ftp->errorString();
 
 		if(id == updateId)
 			delete updateTmp;
@@ -108,8 +186,6 @@ void FtpSynchronizer::checkCommandFinished(int id, bool error)
 
 	if(id != updateId)
 		return;
-
-	qDebug() << "Yes, i'm here ;)";
 
 	updateTmp->seek(0);
 
@@ -169,6 +245,8 @@ void FtpSynchronizer::downloadCommandFinished(int id, bool error)
 
 	if(it->fd)
 		it->fd->close();
+
+	emit fileTransferProgress(++filesDone, filesTotal);
 }
 
 void FtpSynchronizer::uploadCommandFinished(int id, bool error)
@@ -209,6 +287,8 @@ void FtpSynchronizer::uploadCommandFinished(int id, bool error)
 	if(it->fd)
 		it->fd->close();
 
+	emit fileTransferProgress(++filesDone, filesTotal);
+
 	delete it;
 
 	qDebug() << "Pending" << ftp->hasPendingCommands();
@@ -225,15 +305,27 @@ void FtpSynchronizer::lastSyncCommandFinished(int id, bool error)
 	}
 }
 
+void FtpSynchronizer::initCheck()
+{
+	connect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(checkCommandFinished(int,bool)));
+
+	connectToServer();
+
+	updateTmp = new QTemporaryFile("ZIMA-CAD-Sync_XXXXXX", this);
+
+	if(!updateTmp->open())
+	{
+		qDebug() << "Failed to create temp file, skipping update check";
+		return;
+	}
+
+	updateId = ftp->get(remoteDir + "/" + DIRECTORY_CONFIG_PATH, updateTmp);
+}
+
 void FtpSynchronizer::buildRemoteTree()
 {
-	action = BuildingTree;
-	ftp = new QFtp(this);
-
-	connect(ftp, SIGNAL(stateChanged(int)), this, SLOT(stateChange(int)));
 	connect(ftp, SIGNAL(listInfo(QUrlInfo)), this, SLOT(buildTreeListInfo(QUrlInfo)));
 	connect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(buildTreeCommandFinished(int,bool)));
-	connect(ftp, SIGNAL(done(bool)), this, SLOT(buildTreeDone()));
 
 	connectToServer();
 
@@ -254,6 +346,8 @@ void FtpSynchronizer::buildTreeListInfo(QUrlInfo i)
 	it->fileName = i.name();
 	it->localPath = currentItem->localPath + "/" + it->fileName;
 	it->targetPath = currentItem->targetPath + "/" + it->fileName;
+	it->lastMod = i.lastModified();
+	it->size = i.size();
 
 	if(i.isDir())
 	{
@@ -273,12 +367,63 @@ void FtpSynchronizer::buildTreeListInfo(QUrlInfo i)
 	currentItem->children << it;
 }
 
+void FtpSynchronizer::localDeleteAll(QString path)
+{
+	QDir dir(path);
+	QFileInfoList list = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::Files | QDir::Dirs);
+
+	foreach(QFileInfo i, list)
+	{
+		if(i.isDir())
+		{
+			if(i.fileName() == DIRECTORY_CONFIG_DIR)
+				continue;
+
+			localDeleteAll(i.absoluteFilePath());
+		} else {
+			qDebug() << "Remove file" << i.fileName();
+			dir.remove(i.absoluteFilePath());
+		}
+	}
+
+	dir.rmdir(path);
+}
+
+void FtpSynchronizer::remoteDeleteAll(Item *it)
+{
+	if(!it)
+		it = rootItem;
+
+	foreach(Item *child, it->children)
+	{
+		if(child->isDir)
+			remoteDeleteAll(child);
+		else {
+			qDebug() << "Remove" << child->targetPath;
+			ftp->remove(child->targetPath);
+		}
+	}
+
+	qDebug() << "rmdir" << it->targetPath;
+	ftp->rmdir(it->targetPath);
+}
+
 void FtpSynchronizer::initDownload()
 {
 	connect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(downloadCommandFinished(int,bool)));
-	connect(ftp, SIGNAL(done(bool)), this, SLOT(localSyncDone()));
+
+	connectToServer();
 
 	downloadTree(rootItem);
+}
+
+void FtpSynchronizer::initUpload()
+{
+	connect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(uploadCommandFinished(int,bool)));
+
+	connectToServer();
+
+	uploadDir(localDir, remoteDir);
 }
 
 void FtpSynchronizer::downloadTree(Item *it)
@@ -292,6 +437,7 @@ void FtpSynchronizer::downloadTree(Item *it)
 	{
 		d.cdUp();
 		d.mkdir(it->fileName);
+		qDebug() << "mkdir" << it->fileName;
 	} else qDebug() << "dir" << it->localPath << "exists";
 
 	foreach(Item *child, it->children)
@@ -303,6 +449,7 @@ void FtpSynchronizer::downloadTree(Item *it)
 			child->fd->open(QIODevice::WriteOnly);
 
 			files[ ftp->get(child->targetPath, child->fd) ] = child;
+			filesTotal++;
 		}
 	}
 }
@@ -344,6 +491,7 @@ void FtpSynchronizer::uploadDir(QString path, QString targetPath)
 			it->fd->open(QIODevice::ReadOnly);
 
 			files[ ftp->put(it->fd, it->targetPath) ] = it;
+			filesTotal++;
 		}
 	}
 }
@@ -353,62 +501,51 @@ void FtpSynchronizer::stateChange(int state)
 	qDebug() << "State is" << state;
 }
 
-void FtpSynchronizer::checkDone()
+void FtpSynchronizer::commandSequenceDone(bool error)
 {
-	delete ftp;
-	action = None;
-	// emit something
-}
+	if(ftp->hasPendingCommands())
+		return;
 
-void FtpSynchronizer::buildTreeDone()
-{
-	qDebug() << "Build tree done";
+	qDebug() << "Command sequence done" << action;
 
 	switch(action)
 	{
-	case BuildingTree:
-		action = None;
-		ftp->deleteLater();
+	case Checking:
+		disconnect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(checkCommandFinished(int,bool)));
 		break;
-	case Downloading:
+	case BuildingTree:
 		disconnect(ftp, SIGNAL(listInfo(QUrlInfo)), this, SLOT(buildTreeListInfo(QUrlInfo)));
 		disconnect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(buildTreeCommandFinished(int,bool)));
-		disconnect(ftp, SIGNAL(done(bool)), this, SLOT(buildTreeDone()));
-		initDownload();
 		break;
+	case RemovingAll:
+		break;
+	case Downloading:
+		disconnect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(downloadCommandFinished(int,bool)));
+		setLocalLastSync(QDateTime::currentDateTime().toUTC());
+		emit done();
+		break;
+	case Uploading:
+		disconnect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(uploadCommandFinished(int,bool)));
+		break;
+	case SettingLastSync:
+		disconnect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(lastSyncCommandFinished(int,bool)));
+		emit done();
+		break;
+	case None:
+		return;
 	default:
-		action = None;
+		qDebug() << "Unknown action" << action;
 		break;
 	}
+
+	cmdFromQueue();
 }
 
-void FtpSynchronizer::localSyncDone()
+void FtpSynchronizer::abort()
 {
 	action = None;
+	actions.clear();
 
-	ftp->deleteLater();
-	qDebug() << "Done";
-
-	delete rootItem;
-
-	setLocalLastSync();
-}
-
-void FtpSynchronizer::remoteSyncDone()
-{
-	qDebug() << "Done";
-
-	disconnect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(uploadCommandFinished(int,bool)));
-	disconnect(ftp, SIGNAL(done(bool)), this, SLOT(remoteSyncDone()));
-
-	setRemoteLastSync();
-}
-
-void FtpSynchronizer::lastSyncDone()
-{
-	action = None;
-
-	ftp->deleteLater();
-
-	qDebug() << "Set remote last sync done";
+	if(ftp)
+		ftp->abort();
 }

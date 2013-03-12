@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>421</width>
-    <height>606</height>
+    <width>419</width>
+    <height>561</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -50,7 +50,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QGroupBox" name="groupBox_3">
+        <widget class="QGroupBox" name="diffDirGroupBox">
          <property name="title">
           <string>Sync to different directory</string>
          </property>
@@ -62,7 +62,7 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
-           <widget class="QLineEdit" name="lineEdit"/>
+           <widget class="QLineEdit" name="diffDirLineEdit"/>
           </item>
           <item>
            <widget class="QToolButton" name="toolButton">
@@ -75,23 +75,16 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox">
+        <widget class="QCheckBox" name="localRemoveFirstCheckBox">
          <property name="text">
           <string>Remove everything and copy anew</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_2">
+        <widget class="QCheckBox" name="localCleanCheckBox">
          <property name="text">
           <string>Clean with ZIMA-PTC-Cleaner after sync</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>&lt;strong&gt;* New changes available&lt;/strong&gt;</string>
          </property>
         </widget>
        </item>
@@ -111,23 +104,16 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QCheckBox" name="checkBox_3">
+        <widget class="QCheckBox" name="remoteRemoteAllCheckBox">
          <property name="text">
           <string>Remove everything and copy anew</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_4">
+        <widget class="QCheckBox" name="serverClearCheckbox">
          <property name="text">
           <string>Clear with ZIMA-PTC-Cleaner before sync</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_5">
-         <property name="text">
-          <string>Create a package</string>
          </property>
         </widget>
        </item>
@@ -143,6 +129,16 @@
        <property name="fieldGrowthPolicy">
         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
        </property>
+	   <item row="0" column="0">
+        <widget class="QLabel" name="serverLabel">
+         <property name="text">
+          <string>Server</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="serverLineEdit"/>
+       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="usernameLabel">
          <property name="text">
@@ -167,6 +163,16 @@
          </property>
         </widget>
        </item>
+	   <item row="3" column="0">
+        <widget class="QLabel" name="directoryOnServerLabel">
+         <property name="text">
+          <string>Directory on server</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="directoryOnServerLineEdit"/>
+       </item>
        <item row="4" column="0">
         <widget class="QLabel" name="savePasswordLabel">
          <property name="text">
@@ -176,26 +182,6 @@
        </item>
        <item row="4" column="1">
         <widget class="QCheckBox" name="savePasswordCheckBox"/>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="serverLabel">
-         <property name="text">
-          <string>Server</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="serverLineEdit"/>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="directoryOnServerLabel">
-         <property name="text">
-          <string>Directory on server</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLineEdit" name="directoryOnServerLineEdit"/>
        </item>
       </layout>
      </widget>
@@ -243,6 +229,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="abortButton">
+        <property name="text">
+         <string>Abor&amp;t</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="aboutButton">
         <property name="text">
          <string>&amp;About...</string>
@@ -258,7 +251,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>421</width>
+     <width>419</width>
      <height>22</height>
     </rect>
    </property>

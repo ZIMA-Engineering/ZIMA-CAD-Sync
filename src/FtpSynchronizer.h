@@ -21,26 +21,35 @@ signals:
 public slots:
 	virtual void syncToLocal();
 	virtual void syncToServer();
-	virtual void setRemoteLastSync(QDateTime dt = QDateTime::currentDateTimeUtc());
+	virtual void setRemoteLastSync(QDateTime dt);
 	void checkForUpdates();
+	virtual void abort();
 
 private:
 	enum Action {
-		None,
+		None = 0,
 		Checking,
 		BuildingTree,
+		RemovingAll,
 		Uploading,
-		Downloading
+		Downloading,
+		SettingLastSync,
 	};
 
 	void connectToServer();
+	void initCheck();
 	void buildRemoteTree();
+	void localDeleteAll(QString path);
+	void remoteDeleteAll(Item *it = 0);
 	void initDownload();
+	void initUpload();
 	void downloadTree(Item *it = 0);
 	void uploadDir(QString path, QString targetDir);
+	void cmdFromQueue();
 
 	Action action;
 	QFtp *ftp;
+	QList<Action> actions;
 
 	// Check for updates
 	QTemporaryFile *updateTmp;
@@ -52,6 +61,8 @@ private:
 	QList<Item*> dirsToList;
 
 	// Upload & download
+	int filesTotal;
+	int filesDone;
 	QMap<int, Item*> files;
 	QTemporaryFile *remoteLastSyncTmp;
 
@@ -63,11 +74,7 @@ private slots:
 	void downloadCommandFinished(int id, bool error);
 	void uploadCommandFinished(int id, bool error);
 	void lastSyncCommandFinished(int id, bool error);
-	void lastSyncDone();
-	void checkDone();
-	void buildTreeDone();
-	void localSyncDone();
-	void remoteSyncDone();
+	void commandSequenceDone(bool error);
 	
 };
 

@@ -18,10 +18,11 @@ public:
 	void setServer(QString host);
 	void setUsername(QString username);
 	void setPassword(QString passwd);
+	void setDeleteFirst(bool del);
 	virtual void fetchLocalDirectoryConfig();
 	virtual void saveLocalDirectoryConfig(bool pass = false);
-	virtual void setLocalLastSync(QDateTime dt = QDateTime::currentDateTimeUtc());
-	virtual void setRemoteLastSync(QDateTime dt = QDateTime::currentDateTimeUtc()) = 0;
+	virtual void setLocalLastSync(QDateTime dt);
+	virtual void setRemoteLastSync(QDateTime dt) = 0;
 	virtual void checkForUpdates() = 0;
 
 signals:
@@ -29,10 +30,12 @@ signals:
 	void done();
 	void errorOccured(QString errstr);
 	void directoryConfigRead(QString, QString, QString, QString);
+	void fileTransferProgress(int done, int total);
 	
 public slots:
 	virtual void syncToLocal() = 0;
 	virtual void syncToServer() = 0;
+	virtual void abort() = 0;
 
 protected:
 	QString localDir;
@@ -41,6 +44,7 @@ protected:
 	QString username;
 	QString passwd;
 	QDateTime localLastSync;
+	bool deleteFirst;
 	
 };
 

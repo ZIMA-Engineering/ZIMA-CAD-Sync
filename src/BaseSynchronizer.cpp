@@ -5,7 +5,8 @@
 #include "BaseSynchronizer.h"
 
 BaseSynchronizer::BaseSynchronizer(QObject *parent) :
-        QObject(parent)
+	QObject(parent),
+	deleteFirst(false)
 {
 }
 
@@ -32,6 +33,11 @@ void BaseSynchronizer::setUsername(QString username)
 void BaseSynchronizer::setPassword(QString passwd)
 {
 	this->passwd = passwd;
+}
+
+void BaseSynchronizer::setDeleteFirst(bool del)
+{
+	deleteFirst = del;
 }
 
 void BaseSynchronizer::fetchLocalDirectoryConfig()

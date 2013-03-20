@@ -68,6 +68,13 @@
      </widget>
     </item>
     <item>
+     <widget class="QCheckBox" name="exitCheckBox">
+      <property name="text">
+       <string>Exit on success</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QGroupBox" name="localGroupBox">
       <property name="title">
        <string>Sync to local</string>

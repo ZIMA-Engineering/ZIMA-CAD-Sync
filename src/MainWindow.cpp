@@ -58,7 +58,9 @@ MainWindow::MainWindow(QWidget *parent) :
 			<< ui->localGroupBox
 			<< ui->serverGroupBox
 			<< ui->directoryButton
-			<< ui->settingsButton;
+			<< ui->settingsButton
+			<< ui->filterListWidget
+			<< ui->syncCadDataCheckBox;
 
 }
 
@@ -232,6 +234,9 @@ void MainWindow::syncDone()
 	}
 
 	statusBar()->showMessage(tr("Sync done"));
+
+	if(ui->exitCheckBox->isChecked())
+		QApplication::quit();
 }
 
 void MainWindow::abortSync()

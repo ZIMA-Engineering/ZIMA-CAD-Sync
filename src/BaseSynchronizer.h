@@ -26,9 +26,10 @@ public:
 	void setUsername(QString username);
 	void setPassword(QString passwd);
 	void setDeleteFirst(bool del);
+	void setSyncCadData(bool sync);
 	QList<SyncItem*> syncItems();
 	virtual void fetchLocalDirectoryConfig();
-	virtual void saveLocalDirectoryConfig(bool pass, QList<SyncItem*> syncItems);
+	virtual void saveLocalDirectoryConfig(bool pass, QList<SyncItem*> syncItems, bool cadData);
 	virtual void setLocalLastSync(QDateTime dt);
 	virtual void setRemoteLastSync(QDateTime dt) = 0;
 	virtual void checkForUpdates() = 0;
@@ -38,7 +39,7 @@ signals:
 	void remoteStatus(bool changesAvailable);
 	void done();
 	void errorOccured(QString errstr);
-	void directoryConfigRead(QString, QString, QString, QString);
+	void directoryConfigRead(QString, QString, QString, QString, bool);
 	void fileTransferProgress(int done, int total);
 	
 public slots:
@@ -54,6 +55,7 @@ protected:
 	QString passwd;
 	QDateTime localLastSync;
 	bool deleteFirst;
+	bool syncCadData;
 	QStringList exclude;
 	
 };

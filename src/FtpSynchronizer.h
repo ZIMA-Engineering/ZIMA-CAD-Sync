@@ -74,6 +74,7 @@ private slots:
 	void downloadCommandFinished(int id, bool error);
 	void uploadCommandFinished(int id, bool error);
 	void lastSyncCommandFinished(int id, bool error);
+	void removeAllCommandFinished(int id, bool error);
 	void commandSequenceDone(bool error);
 	
 };

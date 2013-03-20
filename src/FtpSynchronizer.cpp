@@ -357,11 +357,11 @@ void FtpSynchronizer::buildTreeListInfo(QUrlInfo i)
 	} else if(i.isFile()) {
 		it->isDir = false;
 
-		if(currentItem->fileName == DIRECTORY_CONFIG_DIR && it->fileName == DIRECTORY_CONFIG_FILE)
-		{
-			delete it;
-			return;
-		}
+//		if(currentItem->fileName == DIRECTORY_CONFIG_DIR && it->fileName == DIRECTORY_CONFIG_FILE)
+//		{
+//			delete it;
+//			return;
+//		}
 	}
 
 	currentItem->children << it;
@@ -394,6 +394,8 @@ void FtpSynchronizer::remoteDeleteAll(Item *it)
 	if(!it)
 		it = rootItem;
 
+	//connect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(removeAllCommandFinished(int,bool)));
+
 	foreach(Item *child, it->children)
 	{
 		if(child->isDir)
@@ -404,8 +406,17 @@ void FtpSynchronizer::remoteDeleteAll(Item *it)
 		}
 	}
 
+	if(it->targetPath == remoteDir)
+		return;
+
 	qDebug() << "rmdir" << it->targetPath;
 	ftp->rmdir(it->targetPath);
+}
+
+void FtpSynchronizer::removeAllCommandFinished(int id, bool error)
+{
+	if(error)
+		qDebug() << "Delete error:" << ftp->errorString() << ftp->error();
 }
 
 void FtpSynchronizer::initDownload()
@@ -452,6 +463,9 @@ void FtpSynchronizer::downloadTree(Item *it)
 
 			downloadTree(child);
 		} else {
+			if(it->localPath == localDir && !syncCadData)
+				continue;
+
 			child->fd = new QFile(child->localPath);
 			child->fd->open(QIODevice::WriteOnly);
 
@@ -491,6 +505,9 @@ void FtpSynchronizer::uploadDir(QString path, QString targetPath)
 
 			uploadDir(i.absoluteFilePath(), targetPath + "/" + i.fileName());
 		} else {
+			if(path == localDir && !syncCadData)
+				continue;
+
 			qDebug() << "Upload file" << i.fileName();
 
 			if(dir.dirName() == DIRECTORY_CONFIG_DIR && i.fileName() == DIRECTORY_CONFIG_FILE)
@@ -531,6 +548,7 @@ void FtpSynchronizer::commandSequenceDone(bool error)
 		disconnect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(buildTreeCommandFinished(int,bool)));
 		break;
 	case RemovingAll:
+		//disconnect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(removeAllCommandFinished(int,bool)));
 		break;
 	case Downloading:
 		disconnect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(downloadCommandFinished(int,bool)));

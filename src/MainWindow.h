@@ -26,7 +26,7 @@ public slots:
 	void selectLocalSync(bool checked);
 	void selectRemoteSync(bool checked);
 	void changeServerInfo();
-	void directoryConfigRead(QString host, QString username, QString passwd, QString remoteDir);
+	void directoryConfigRead(QString host, QString username, QString passwd, QString remoteDir, bool syncCadData);
 	void sync();
 	void remoteStatus(bool changesAvailable);
 	void updateTransferProgress(int done, int total);

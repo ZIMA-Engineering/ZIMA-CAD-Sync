@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	syncer = new FtpSynchronizer(this);
 
-	connect(syncer, SIGNAL(directoryConfigRead(QString,QString,QString,QString)), this, SLOT(directoryConfigRead(QString,QString,QString,QString)));
+	connect(syncer, SIGNAL(directoryConfigRead(QString,QString,QString,QString,bool)), this, SLOT(directoryConfigRead(QString,QString,QString,QString,bool)));
 	connect(syncer, SIGNAL(remoteStatus(bool)), this, SLOT(remoteStatus(bool)));
 	connect(syncer, SIGNAL(done()), this, SLOT(syncDone()));
 
@@ -110,12 +110,13 @@ void MainWindow::selectRemoteSync(bool checked)
 	ui->localGroupBox->setChecked(!checked);
 }
 
-void MainWindow::directoryConfigRead(QString host, QString username, QString passwd, QString remoteDir)
+void MainWindow::directoryConfigRead(QString host, QString username, QString passwd, QString remoteDir, bool syncCadData)
 {
 	ui->serverLineEdit->setText(host);
 	ui->usernameLineEdit->setText(username);
 	ui->passwordLineEdit->setText(passwd);
 	ui->directoryOnServerLineEdit->setText(remoteDir);
+	ui->syncCadDataCheckBox->setChecked(syncCadData);
 }
 
 void MainWindow::changeServerInfo()
@@ -165,8 +166,9 @@ void MainWindow::sync()
 		syncItems << si;
 	}
 
-	syncer->saveLocalDirectoryConfig(ui->savePasswordCheckBox->isChecked(), syncItems);
+	syncer->saveLocalDirectoryConfig(ui->savePasswordCheckBox->isChecked(), syncItems, ui->syncCadDataCheckBox->isChecked());
 	syncer->applyFilters(syncItems);
+	syncer->setSyncCadData(ui->syncCadDataCheckBox->isChecked());
 
 	qDeleteAll(syncItems);
 

@@ -6,7 +6,8 @@
 
 BaseSynchronizer::BaseSynchronizer(QObject *parent) :
 	QObject(parent),
-	deleteFirst(false)
+	deleteFirst(false),
+	syncCadData(true)
 {
 }
 
@@ -38,6 +39,11 @@ void BaseSynchronizer::setPassword(QString passwd)
 void BaseSynchronizer::setDeleteFirst(bool del)
 {
 	deleteFirst = del;
+}
+
+void BaseSynchronizer::setSyncCadData(bool sync)
+{
+	syncCadData = sync;
 }
 
 QList<SyncItem*> BaseSynchronizer::syncItems()
@@ -80,6 +86,7 @@ void BaseSynchronizer::fetchLocalDirectoryConfig()
 	username = cfg.value("Username", username).toString();
 	passwd = cfg.value("Password", passwd).toString();
 	remoteDir = cfg.value("RemoteDir", remoteDir).toString();
+	syncCadData = cfg.value("SyncCadData").toBool();
 
 	QString sync = cfg.value("LastSync").toString();
 
@@ -88,10 +95,10 @@ void BaseSynchronizer::fetchLocalDirectoryConfig()
 
 	cfg.endGroup();
 
-	emit directoryConfigRead(host, username, passwd, remoteDir);
+	emit directoryConfigRead(host, username, passwd, remoteDir, syncCadData);
 }
 
-void BaseSynchronizer::saveLocalDirectoryConfig(bool pass, QList<SyncItem*> syncItems)
+void BaseSynchronizer::saveLocalDirectoryConfig(bool pass, QList<SyncItem*> syncItems, bool cadData)
 {
 	QString configDir = localDir + "/" + DIRECTORY_CONFIG_DIR;
 
@@ -111,6 +118,8 @@ void BaseSynchronizer::saveLocalDirectoryConfig(bool pass, QList<SyncItem*> sync
 		cfg.setValue("Password", passwd);
 
 	cfg.setValue("RemoteDir", remoteDir);
+
+	cfg.setValue("SyncCadData", cadData);
 
 	cfg.beginGroup("Filters");
 

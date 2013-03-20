@@ -315,6 +315,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="aboutButton">
+        <property name="text">
+         <string>&amp;About...</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -335,13 +342,6 @@
         <property name="icon">
          <iconset resource="../ZIMA-CAD-Sync.qrc">
           <normaloff>:/gfx/stop.png</normaloff>:/gfx/stop.png</iconset>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="aboutButton">
-        <property name="text">
-         <string>&amp;About...</string>
         </property>
        </widget>
       </item>

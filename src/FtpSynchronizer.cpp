@@ -463,7 +463,7 @@ void FtpSynchronizer::downloadTree(Item *it)
 
 			downloadTree(child);
 		} else {
-			if(it->localPath == localDir && !syncCadData)
+			if((it->localPath == localDir && !syncCadData) || (child->localPath == (localDir + "/" + DIRECTORY_CONFIG_PATH)))
 				continue;
 
 			child->fd = new QFile(child->localPath);

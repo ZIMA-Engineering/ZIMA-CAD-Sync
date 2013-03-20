@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>gfx/icon.png</file>
+        <file>gfx/stop.png</file>
+        <file>gfx/options.png</file>
     </qresource>
 </RCC>

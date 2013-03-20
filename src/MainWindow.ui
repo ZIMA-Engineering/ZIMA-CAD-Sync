@@ -233,6 +233,10 @@
         <property name="text">
          <string>S&amp;ettings</string>
         </property>
+        <property name="icon">
+         <iconset resource="../ZIMA-CAD-Sync.qrc">
+          <normaloff>:/gfx/options.png</normaloff>:/gfx/options.png</iconset>
+        </property>
        </widget>
       </item>
       <item>
@@ -259,6 +263,10 @@
        <widget class="QPushButton" name="abortButton">
         <property name="text">
          <string>Abor&amp;t</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../ZIMA-CAD-Sync.qrc">
+          <normaloff>:/gfx/stop.png</normaloff>:/gfx/stop.png</iconset>
         </property>
        </widget>
       </item>

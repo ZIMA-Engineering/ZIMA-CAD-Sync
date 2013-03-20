@@ -23,6 +23,7 @@ public:
 public slots:
 	void setDirectory(QString path);
 	void selectDirectoryDialog();
+	void selectDiffDirDialog();
 	void selectLocalSync(bool checked);
 	void selectRemoteSync(bool checked);
 	void changeServerInfo();

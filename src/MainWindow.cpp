@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	connect(ui->directoryLineEdit, SIGNAL(textEdited(QString)), this, SLOT(setDirectory(QString)));
 	connect(ui->directoryButton, SIGNAL(clicked()), this, SLOT(selectDirectoryDialog()));
+	connect(ui->diffDirToolButton, SIGNAL(clicked()), this, SLOT(selectDiffDirDialog()));
 
 	connect(ui->localGroupBox, SIGNAL(clicked(bool)), this, SLOT(selectLocalSync(bool)));
 	connect(ui->serverGroupBox, SIGNAL(clicked(bool)), this, SLOT(selectRemoteSync(bool)));
@@ -98,6 +99,14 @@ void MainWindow::selectDirectoryDialog()
 
 	if(!d.isEmpty())
 		setDirectory(d);
+}
+
+void MainWindow::selectDiffDirDialog()
+{
+	QString d = QFileDialog::getExistingDirectory(this, tr("Select different directory to sync"), ui->directoryLineEdit->text());
+
+	if(!d.isEmpty())
+		ui->diffDirLineEdit->setText(d);
 }
 
 void MainWindow::selectLocalSync(bool checked)

@@ -92,7 +92,7 @@
            <widget class="QLineEdit" name="diffDirLineEdit"/>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton">
+           <widget class="QToolButton" name="diffDirToolButton">
             <property name="text">
              <string>...</string>
             </property>

@@ -7,6 +7,13 @@
 
 #include <QObject>
 #include <QDateTime>
+#include <QStringList>
+
+struct SyncItem
+{
+	bool sync;
+	QString name;
+};
 
 class BaseSynchronizer : public QObject
 {
@@ -19,11 +26,13 @@ public:
 	void setUsername(QString username);
 	void setPassword(QString passwd);
 	void setDeleteFirst(bool del);
+	QList<SyncItem*> syncItems();
 	virtual void fetchLocalDirectoryConfig();
-	virtual void saveLocalDirectoryConfig(bool pass = false);
+	virtual void saveLocalDirectoryConfig(bool pass, QList<SyncItem*> syncItems);
 	virtual void setLocalLastSync(QDateTime dt);
 	virtual void setRemoteLastSync(QDateTime dt) = 0;
 	virtual void checkForUpdates() = 0;
+	virtual void applyFilters(QList<SyncItem*> syncItems);
 
 signals:
 	void remoteStatus(bool changesAvailable);
@@ -45,6 +54,7 @@ protected:
 	QString passwd;
 	QDateTime localLastSync;
 	bool deleteFirst;
+	QStringList exclude;
 	
 };
 

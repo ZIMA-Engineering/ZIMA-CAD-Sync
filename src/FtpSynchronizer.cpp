@@ -26,10 +26,10 @@ void FtpSynchronizer::syncToLocal()
 {
 	qDebug() << "Ok, syncing to local";
 
-	if(!QFile::exists(dir))
+	if(!QFile::exists(localDir))
 	{
 		QDir d;
-		d.mkdir(dir);
+		d.mkdir(localDir);
 	}
 
 	actions << BuildingTree << Downloading;
@@ -443,8 +443,15 @@ void FtpSynchronizer::downloadTree(Item *it)
 	foreach(Item *child, it->children)
 	{
 		if(child->isDir)
+		{
+			if(it->localPath == localDir && exclude.contains(child->fileName))
+			{
+				qDebug() << "Exclude" << child->fileName;
+				continue;
+			}
+
 			downloadTree(child);
-		else {
+		} else {
 			child->fd = new QFile(child->localPath);
 			child->fd->open(QIODevice::WriteOnly);
 
@@ -476,6 +483,12 @@ void FtpSynchronizer::uploadDir(QString path, QString targetPath)
 	{
 		if(i.isDir())
 		{
+			if(path == localDir && exclude.contains(i.fileName()))
+			{
+				qDebug() << "Exclude" << i.fileName();
+				continue;
+			}
+
 			uploadDir(i.absoluteFilePath(), targetPath + "/" + i.fileName());
 		} else {
 			qDebug() << "Upload file" << i.fileName();

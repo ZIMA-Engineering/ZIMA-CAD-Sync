@@ -1,6 +1,7 @@
 #include <QFileDialog>
 #include <QProcess>
 #include <QDebug>
+#include <QListWidgetItem>
 
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
@@ -73,6 +74,22 @@ void MainWindow::setDirectory(QString path)
 	syncer->setLocalDir(path);
 	syncer->fetchLocalDirectoryConfig();
 	syncer->checkForUpdates();
+
+	ui->filterListWidget->clear();
+
+	QList<SyncItem*> items = syncer->syncItems();
+
+	foreach(SyncItem *i, items)
+	{
+		QListWidgetItem *wi = new QListWidgetItem(ui->filterListWidget);
+		wi->setCheckState(i->sync ? Qt::Checked : Qt::Unchecked);
+		wi->setIcon(this->style()->standardIcon(QStyle::SP_DirIcon));
+		wi->setText(i->name);
+	}
+
+	qDeleteAll(items);
+
+	ui->dirNameLabel->setText("<h1>" + path.split("/").last() + "</h1>");
 }
 
 void MainWindow::selectDirectoryDialog()
@@ -134,7 +151,24 @@ void MainWindow::sync()
 	}
 
 	syncer->setDeleteFirst( ui->localGroupBox->isChecked() ? ui->localRemoveFirstCheckBox->isChecked() : ui->remoteRemoteAllCheckBox->isChecked() );
-	syncer->saveLocalDirectoryConfig(ui->savePasswordCheckBox->isChecked());
+
+	QList<SyncItem*> syncItems;
+	int cnt = ui->filterListWidget->count();
+
+	for(int i = 0; i < cnt; i++)
+	{
+		QListWidgetItem *wi = ui->filterListWidget->item(i);
+		SyncItem *si = new SyncItem;
+		si->sync = wi->checkState() == Qt::Checked;
+		si->name = wi->text();
+
+		syncItems << si;
+	}
+
+	syncer->saveLocalDirectoryConfig(ui->savePasswordCheckBox->isChecked(), syncItems);
+	syncer->applyFilters(syncItems);
+
+	qDeleteAll(syncItems);
 
 	if(ui->localGroupBox->isChecked())
 		syncer->syncToLocal();

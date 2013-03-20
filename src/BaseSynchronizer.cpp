@@ -40,6 +40,32 @@ void BaseSynchronizer::setDeleteFirst(bool del)
 	deleteFirst = del;
 }
 
+QList<SyncItem*> BaseSynchronizer::syncItems()
+{
+	QDir dir(localDir);
+	QList<SyncItem*> ret;
+	QSettings cfg(localDir + "/" + DIRECTORY_CONFIG_PATH, QSettings::IniFormat, this);
+	cfg.beginGroup("Sync/Filters");
+
+	QStringList exclude = cfg.value("Exclude").toStringList();
+
+	QStringList list = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+
+	foreach(QString d, list)
+	{
+		if(d == DIRECTORY_CONFIG_DIR)
+			continue;
+
+		SyncItem *i = new SyncItem;
+		i->sync = !exclude.contains(d);
+		i->name = d;
+
+		ret << i;
+	}
+
+	return ret;
+}
+
 void BaseSynchronizer::fetchLocalDirectoryConfig()
 {
 	QString configPath = localDir + "/" + DIRECTORY_CONFIG_PATH;
@@ -65,7 +91,7 @@ void BaseSynchronizer::fetchLocalDirectoryConfig()
 	emit directoryConfigRead(host, username, passwd, remoteDir);
 }
 
-void BaseSynchronizer::saveLocalDirectoryConfig(bool pass)
+void BaseSynchronizer::saveLocalDirectoryConfig(bool pass, QList<SyncItem*> syncItems)
 {
 	QString configDir = localDir + "/" + DIRECTORY_CONFIG_DIR;
 
@@ -86,6 +112,20 @@ void BaseSynchronizer::saveLocalDirectoryConfig(bool pass)
 
 	cfg.setValue("RemoteDir", remoteDir);
 
+	cfg.beginGroup("Filters");
+
+	QStringList exclude;
+
+	foreach(SyncItem *i, syncItems)
+	{
+		if(!i->sync)
+			exclude << i->name;
+	}
+
+	cfg.setValue("Exclude", exclude);
+
+	cfg.endGroup();
+
 	cfg.endGroup();
 }
 
@@ -95,4 +135,15 @@ void BaseSynchronizer::setLocalLastSync(QDateTime dt)
 	cfg.beginGroup("Sync");
 	cfg.setValue("LastSync", dt.toString(Qt::ISODate));
 	cfg.endGroup();
+}
+
+void BaseSynchronizer::applyFilters(QList<SyncItem*> syncItems)
+{
+	exclude.clear();
+
+	foreach(SyncItem *i, syncItems)
+	{
+		if(!i->sync)
+			exclude << i->name;
+	}
 }

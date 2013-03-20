@@ -126,7 +126,7 @@ void FtpSynchronizer::cmdFromQueue()
 
 void FtpSynchronizer::setRemoteLastSync(QDateTime dt)
 {
-	remoteLastSyncTmp = new QTemporaryFile("ZIMA-CAD-Sync_XXXXXX", this);
+	remoteLastSyncTmp = new QTemporaryFile(QDir::tempPath() + "/ZIMA-CAD-Sync_XXXXXX", this);
 
 	if(!remoteLastSyncTmp->open())
 	{
@@ -311,7 +311,7 @@ void FtpSynchronizer::initCheck()
 
 	connectToServer();
 
-	updateTmp = new QTemporaryFile("ZIMA-CAD-Sync_XXXXXX", this);
+	updateTmp = new QTemporaryFile(QDir::tempPath() + "/ZIMA-CAD-Sync_XXXXXX", this);
 
 	if(!updateTmp->open())
 	{

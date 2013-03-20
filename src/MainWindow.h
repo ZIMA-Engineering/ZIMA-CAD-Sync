@@ -29,6 +29,8 @@ public slots:
 	void changeServerInfo();
 	void directoryConfigRead(QString host, QString username, QString passwd, QString remoteDir, bool syncCadData);
 	void sync();
+	void syncToLocal();
+	void syncToServer();
 	void remoteStatus(bool changesAvailable);
 	void updateTransferProgress(int done, int total);
 	void syncDone();
@@ -36,12 +38,18 @@ public slots:
 	void openSettings();
 
 private:
+	enum SyncDirection {
+		ToLocal,
+		ToServer
+	};
+
 	Ui::MainWindow *ui;
 	FtpSynchronizer *syncer;
 	SettingsDialog *settingsDlg;
 	AboutDialog *aboutDlg;
 	QProgressBar *progressBar;
 	QList<QWidget*> widgetsToToggle;
+	SyncDirection syncDirection;
 };
 
 #endif // MAINWINDOW_H

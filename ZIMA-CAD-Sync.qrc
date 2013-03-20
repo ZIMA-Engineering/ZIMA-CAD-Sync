@@ -3,5 +3,7 @@
         <file>gfx/icon.png</file>
         <file>gfx/stop.png</file>
         <file>gfx/options.png</file>
+        <file>gfx/down.png</file>
+        <file>gfx/up.png</file>
     </qresource>
 </RCC>

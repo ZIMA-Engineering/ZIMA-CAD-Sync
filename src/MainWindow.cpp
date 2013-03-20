@@ -24,7 +24,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->passwordLineEdit, SIGNAL(textEdited(QString)), this, SLOT(changeServerInfo()));
 	connect(ui->directoryOnServerLineEdit, SIGNAL(textEdited(QString)), this, SLOT(changeServerInfo()));
 
-	connect(ui->syncButton, SIGNAL(clicked()), this, SLOT(sync()));
+	connect(ui->syncToLocalButton, SIGNAL(clicked()), this, SLOT(syncToLocal()));
+	connect(ui->syncToServerButton, SIGNAL(clicked()), this, SLOT(syncToServer()));
 
 	aboutDlg = new AboutDialog(this);
 	connect(ui->aboutButton, SIGNAL(clicked()), aboutDlg, SLOT(exec()));
@@ -60,8 +61,9 @@ MainWindow::MainWindow(QWidget *parent) :
 			<< ui->directoryButton
 			<< ui->settingsButton
 			<< ui->filterListWidget
-			<< ui->syncCadDataCheckBox;
-
+			<< ui->syncCadDataCheckBox
+			<< ui->syncToLocalButton
+			<< ui->syncToServerButton;
 }
 
 MainWindow::~MainWindow()
@@ -140,7 +142,7 @@ void MainWindow::changeServerInfo()
 
 void MainWindow::sync()
 {
-	if(ui->localGroupBox->isChecked() && ui->diffDirGroupBox->isChecked() && !ui->diffDirLineEdit->text().isEmpty())
+	if(syncDirection == ToLocal && ui->diffDirGroupBox->isChecked() && !ui->diffDirLineEdit->text().isEmpty())
 	{
 		QString d = ui->diffDirLineEdit->text();
 
@@ -149,7 +151,7 @@ void MainWindow::sync()
 		else syncer->setLocalDir(d);
 	}
 
-	if(ui->serverGroupBox->isChecked() && ui->serverClearCheckbox->isChecked())
+	if(syncDirection == ToServer && ui->serverClearCheckbox->isChecked())
 	{
 		QString ptcCleaner = settingsDlg->zimaPtcCleanerPath();
 
@@ -162,7 +164,7 @@ void MainWindow::sync()
 		}
 	}
 
-	syncer->setDeleteFirst( ui->localGroupBox->isChecked() ? ui->localRemoveFirstCheckBox->isChecked() : ui->remoteRemoteAllCheckBox->isChecked() );
+	syncer->setDeleteFirst( syncDirection == ToLocal ? ui->localRemoveFirstCheckBox->isChecked() : ui->remoteRemoteAllCheckBox->isChecked() );
 
 	QList<SyncItem*> syncItems;
 	int cnt = ui->filterListWidget->count();
@@ -183,17 +185,30 @@ void MainWindow::sync()
 
 	qDeleteAll(syncItems);
 
-	if(ui->localGroupBox->isChecked())
+	if(syncDirection == ToLocal)
 		syncer->syncToLocal();
 	else
 		syncer->syncToServer();
 
 	progressBar->show();
-	ui->syncButton->hide();
 	ui->abortButton->show();
 
 	foreach(QWidget *w, widgetsToToggle)
 		w->setEnabled(false);
+}
+
+void MainWindow::syncToLocal()
+{
+	syncDirection = ToLocal;
+
+	sync();
+}
+
+void MainWindow::syncToServer()
+{
+	syncDirection = ToServer;
+
+	sync();
 }
 
 void MainWindow::remoteStatus(bool changesAvailable)
@@ -214,13 +229,12 @@ void MainWindow::updateTransferProgress(int done, int total)
 void MainWindow::syncDone()
 {
 	progressBar->hide();
-	ui->syncButton->show();
 	ui->abortButton->hide();
 
 	foreach(QWidget *w, widgetsToToggle)
 		w->setEnabled(true);
 
-	if(ui->localGroupBox->isChecked() && ui->localCleanCheckBox->isChecked())
+	if(syncDirection == ToLocal && ui->localCleanCheckBox->isChecked())
 	{
 		QString ptcCleaner = settingsDlg->zimaPtcCleanerPath();
 
@@ -244,7 +258,6 @@ void MainWindow::abortSync()
 	syncer->abort();
 
 	progressBar->hide();
-	ui->syncButton->show();
 	ui->abortButton->hide();
 
 	foreach(QWidget *w, widgetsToToggle)

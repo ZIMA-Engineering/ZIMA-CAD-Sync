@@ -26,6 +26,23 @@
     </message>
 </context>
 <context>
+    <name>FtpSynchronizer</name>
+    <message>
+        <location filename="../src/FtpSynchronizer.cpp" line="541"/>
+        <source>Unable to connect to host
+
+</source>
+        <translation>Připojení k serveru selhalo</translation>
+    </message>
+    <message>
+        <location filename="../src/FtpSynchronizer.cpp" line="543"/>
+        <source>Unable to login
+
+</source>
+        <translation>Pokus o login selhal</translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <location filename="../src/MainWindow.ui" line="14"/>
@@ -82,7 +99,7 @@
     </message>
     <message>
         <location filename="../src/MainWindow.ui" line="295"/>
-        <location filename="../src/MainWindow.cpp" line="218"/>
+        <location filename="../src/MainWindow.cpp" line="220"/>
         <source>Sync to local</source>
         <translation>Synchronizovat lokální složku</translation>
     </message>
@@ -152,19 +169,24 @@
         <translation>Uložit</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="112"/>
+        <location filename="../src/MainWindow.cpp" line="114"/>
         <source>Select directory to sync</source>
         <translation>Vyberte složku k synchronizaci</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="120"/>
+        <location filename="../src/MainWindow.cpp" line="122"/>
         <source>Select different directory to sync</source>
         <translation>Vyberte jinou složku k synchronizaci</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="217"/>
+        <location filename="../src/MainWindow.cpp" line="219"/>
         <source>Sync to local (* New changes available)</source>
         <translation>Synchronizovat do pracovní složky (* Na serveru jsou k dispozici změny)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="332"/>
+        <source>Error occured</source>
+        <translation>Chyba připojení</translation>
     </message>
 </context>
 <context>

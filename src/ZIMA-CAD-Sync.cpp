@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 
 	QTranslator translator;
 
-	QString filename = "ZIMA-CAD-Sync" + QLocale::system().name();
+	QString filename = "ZIMA-CAD-Sync_" + QLocale::system().name();
 	QStringList paths;
 
 	paths

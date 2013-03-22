@@ -33,6 +33,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	settingsDlg = new SettingsDialog(this);
 	connect(ui->settingsButton, SIGNAL(clicked()), this, SLOT(openSettings()));
 
+	connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(saveDirectoryConfig()));
+
 	syncer = new FtpSynchronizer(this);
 
 	connect(syncer, SIGNAL(directoryConfigRead(QString,QString,QString,QString,bool)), this, SLOT(directoryConfigRead(QString,QString,QString,QString,bool)));
@@ -171,24 +173,9 @@ void MainWindow::sync()
 
 	syncer->setDeleteFirst( syncDirection == ToLocal ? ui->localRemoveFirstCheckBox->isChecked() : ui->remoteRemoteAllCheckBox->isChecked() );
 
-	QList<SyncItem*> syncItems;
-	int cnt = ui->filterListWidget->count();
+	saveDirectoryConfig();
 
-	for(int i = 0; i < cnt; i++)
-	{
-		QListWidgetItem *wi = ui->filterListWidget->item(i);
-		SyncItem *si = new SyncItem;
-		si->sync = wi->checkState() == Qt::Checked;
-		si->name = wi->text();
-
-		syncItems << si;
-	}
-
-	syncer->saveLocalDirectoryConfig(ui->savePasswordCheckBox->isChecked(), syncItems, ui->syncCadDataCheckBox->isChecked());
-	syncer->applyFilters(syncItems);
 	syncer->setSyncCadData(ui->syncCadDataCheckBox->isChecked());
-
-	qDeleteAll(syncItems);
 
 	if(syncDirection == ToLocal)
 		syncer->syncToLocal();
@@ -299,4 +286,25 @@ void MainWindow::openSettings()
 {
 	if(settingsDlg->exec())
 		settingsDlg->saveSettings();
+}
+
+void MainWindow::saveDirectoryConfig()
+{
+	QList<SyncItem*> syncItems;
+	int cnt = ui->filterListWidget->count();
+
+	for(int i = 0; i < cnt; i++)
+	{
+		QListWidgetItem *wi = ui->filterListWidget->item(i);
+		SyncItem *si = new SyncItem;
+		si->sync = wi->checkState() == Qt::Checked;
+		si->name = wi->text();
+
+		syncItems << si;
+	}
+
+	syncer->saveLocalDirectoryConfig(ui->savePasswordCheckBox->isChecked(), syncItems, ui->syncCadDataCheckBox->isChecked());
+	syncer->applyFilters(syncItems);
+
+	qDeleteAll(syncItems);
 }

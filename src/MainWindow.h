@@ -36,6 +36,7 @@ public slots:
 	void syncDone();
 	void abortSync();
 	void openSettings();
+	void saveDirectoryConfig();
 
 private:
 	enum SyncDirection {

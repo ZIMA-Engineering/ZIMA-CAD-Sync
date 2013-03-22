@@ -38,6 +38,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	syncer = new FtpSynchronizer(this);
 
 	connect(syncer, SIGNAL(directoryConfigRead(QString,QString,QString,QString,bool)), this, SLOT(directoryConfigRead(QString,QString,QString,QString,bool)));
+	connect(syncer, SIGNAL(logoFound(QPixmap,bool)), this, SLOT(setDirectoryLogo(QPixmap,bool)));
+	connect(syncer, SIGNAL(localizedLabelFound(QString)), this, SLOT(setDirectoryLabel(QString)));
 	connect(syncer, SIGNAL(remoteStatus(bool)), this, SLOT(remoteStatus(bool)));
 	connect(syncer, SIGNAL(done()), this, SLOT(syncDone()));
 
@@ -81,8 +83,13 @@ void MainWindow::setDirectory(QString path)
 	if(path != ui->directoryLineEdit->text())
 		ui->directoryLineEdit->setText(path);
 
+	QDir d(path);
+
+	ui->dirNameLabel->setText("<h1>" + d.dirName() + "</h1>");
+
 	syncer->setLocalDir(path);
 	syncer->fetchLocalDirectoryConfig();
+	syncer->probeMetadata();
 	syncer->checkForUpdates();
 
 	ui->filterListWidget->clear();
@@ -98,10 +105,6 @@ void MainWindow::setDirectory(QString path)
 	}
 
 	qDeleteAll(items);
-
-	QDir d(path);
-
-	ui->dirNameLabel->setText("<h1>" + d.dirName() + "</h1>");
 }
 
 void MainWindow::selectDirectoryDialog()
@@ -307,4 +310,17 @@ void MainWindow::saveDirectoryConfig()
 	syncer->applyFilters(syncItems);
 
 	qDeleteAll(syncItems);
+}
+
+void MainWindow::setDirectoryLogo(QPixmap logo, bool showText)
+{
+	ui->dirLogoLabel->setPixmap(logo);
+
+	if(!showText)
+		ui->dirNameLabel->setText("");
+}
+
+void MainWindow::setDirectoryLabel(QString label)
+{
+	ui->dirNameLabel->setText("<h1>" + label + "</h1>");
 }

@@ -1,6 +1,8 @@
 #include <QFile>
 #include <QDir>
 #include <QSettings>
+#include <QLocale>
+#include <QDebug>
 
 #include "BaseSynchronizer.h"
 
@@ -96,6 +98,57 @@ void BaseSynchronizer::fetchLocalDirectoryConfig()
 	cfg.endGroup();
 
 	emit directoryConfigRead(host, username, passwd, remoteDir, syncCadData);
+}
+
+void BaseSynchronizer::probeMetadata()
+{
+	qDebug() << "Probing metadata";
+
+	QString logo = localDir + "/" DIRECTORY_CONFIG_DIR "/" LOGO_FILE;
+	QString logoText = localDir + "/" DIRECTORY_CONFIG_DIR "/" LOGO_TEXT_FILE;
+	QString metadataPath = localDir + "/" DIRECTORY_CONFIG_DIR "/" METADATA_FILE;
+
+	if(QFile::exists(logo))
+	{
+		emit logoFound(QPixmap(logo), false);
+		return; // No text is displayed, no need to read metadata.ini
+	} else if(QFile::exists(logoText))
+		emit logoFound(QPixmap(logoText), true);
+
+	if(!QFile::exists(metadataPath))
+		return;
+
+	QSettings metadata(metadataPath, QSettings::IniFormat);
+	QString currentAppLang = QLocale::system().name().left(2);
+	QString lang;
+
+	metadata.beginGroup("params");
+
+	foreach(QString group, metadata.childGroups())
+	{
+		if(group == currentAppLang)
+		{
+			lang = group;
+			break;
+		}
+	}
+
+	if(lang.isEmpty())
+	{
+		QStringList childGroups = metadata.childGroups();
+
+		if(childGroups.contains("en"))
+			lang = "en";
+		else if(childGroups.count())
+			lang = childGroups.first();
+		else
+			return;
+	}
+
+	QString label = metadata.value(QString("%1/label").arg(lang)).toString();
+
+	if(!label.isEmpty())
+		emit localizedLabelFound(label);
 }
 
 void BaseSynchronizer::saveLocalDirectoryConfig(bool pass, QList<SyncItem*> syncItems, bool cadData)

@@ -37,6 +37,8 @@ public slots:
 	void abortSync();
 	void openSettings();
 	void saveDirectoryConfig();
+	void setDirectoryLogo(QPixmap logo, bool showText);
+	void setDirectoryLabel(QString label);
 
 private:
 	enum SyncDirection {

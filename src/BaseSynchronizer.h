@@ -5,9 +5,14 @@
 #define DIRECTORY_CONFIG_FILE "zima-ftp-sync.ini"
 #define DIRECTORY_CONFIG_PATH DIRECTORY_CONFIG_DIR "/" DIRECTORY_CONFIG_FILE
 
+#define METADATA_FILE "metadata.ini"
+#define LOGO_FILE "logo.png"
+#define LOGO_TEXT_FILE "logo-text.png"
+
 #include <QObject>
 #include <QDateTime>
 #include <QStringList>
+#include <QPixmap>
 
 struct SyncItem
 {
@@ -34,12 +39,15 @@ public:
 	virtual void setRemoteLastSync(QDateTime dt) = 0;
 	virtual void checkForUpdates() = 0;
 	virtual void applyFilters(QList<SyncItem*> syncItems);
+	virtual void probeMetadata();
 
 signals:
 	void remoteStatus(bool changesAvailable);
 	void done();
 	void errorOccured(QString errstr);
 	void directoryConfigRead(QString, QString, QString, QString, bool);
+	void logoFound(QPixmap, bool);
+	void localizedLabelFound(QString);
 	void fileTransferProgress(int done, int total);
 	
 public slots:

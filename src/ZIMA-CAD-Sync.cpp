@@ -1,5 +1,7 @@
 #include <QtGui/QApplication>
 #include <QTextCodec>
+#include <QTranslator>
+#include <QLocale>
 #include <QDir>
 
 #include "MainWindow.h"
@@ -15,6 +17,25 @@ int main(int argc, char *argv[])
 	QTextCodec::setCodecForLocale(QTextCodec::codecForName("utf8"));
 
 	QApplication a(argc, argv);
+
+	QTranslator translator;
+
+	QString filename = "ZIMA-CAD-Sync" + QLocale::system().name();
+	QStringList paths;
+
+	paths
+			<< filename
+			<< QApplication::applicationDirPath() + "/" + filename
+			<< ("locale/" + filename)
+			<< (":/" + filename);
+
+	foreach(QString path, paths)
+		if( translator.load(path) )
+		{
+			a.installTranslator(&translator);
+			break;
+		}
+
 	MainWindow w;
 
 	QStringList args = QCoreApplication::arguments();

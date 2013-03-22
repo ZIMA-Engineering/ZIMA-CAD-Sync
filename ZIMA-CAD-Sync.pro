@@ -33,7 +33,7 @@ FORMS    += MainWindow.ui \
     src/SettingsDialog.ui
 
 CODECFORTR = UTF-8
-#TRANSLATIONS += locale/ZIMA-CAD-Sync_cs_CZ.ts
+TRANSLATIONS += locale/ZIMA-CAD-Sync_cs_CZ.ts
 
 win32:RC_FILE = src/ZIMA-CAD-Sync.rc
 

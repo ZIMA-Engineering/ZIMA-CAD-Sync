@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Settings</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../ZIMA-CAD-Sync.qrc">
+    <normaloff>:/gfx/icon.png</normaloff>:/gfx/icon.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -67,7 +71,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../ZIMA-CAD-Sync.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

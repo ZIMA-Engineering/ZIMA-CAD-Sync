@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>517</width>
-    <height>795</height>
+    <height>809</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -122,6 +122,12 @@
      <layout class="QHBoxLayout" name="horizontalLayout_6">
       <item>
        <widget class="QLabel" name="label_3">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string/>
         </property>
@@ -213,6 +219,12 @@
      <layout class="QHBoxLayout" name="horizontalLayout_7">
       <item>
        <widget class="QLabel" name="label_4">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string/>
         </property>
@@ -224,7 +236,7 @@
       <item>
        <widget class="QGroupBox" name="localGroupBox">
         <property name="title">
-         <string>Sync to local</string>
+         <string>Sync to working directory</string>
         </property>
         <property name="checkable">
          <bool>false</bool>

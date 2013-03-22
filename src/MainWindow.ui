@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>445</width>
-    <height>797</height>
+    <width>487</width>
+    <height>818</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -51,6 +51,13 @@
      </layout>
     </item>
     <item>
+     <widget class="QCheckBox" name="syncCadDataCheckBox">
+      <property name="text">
+       <string>Sync CAD data</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLabel" name="label">
       <property name="text">
        <string>Checked directories will be synced</string>
@@ -58,12 +65,12 @@
      </widget>
     </item>
     <item>
-     <widget class="QListWidget" name="filterListWidget"/>
-    </item>
-    <item>
-     <widget class="QCheckBox" name="syncCadDataCheckBox">
-      <property name="text">
-       <string>Sync CAD data</string>
+     <widget class="QListWidget" name="filterListWidget">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>100</height>
+       </size>
       </property>
      </widget>
     </item>
@@ -75,152 +82,208 @@
      </widget>
     </item>
     <item>
-     <widget class="QGroupBox" name="serverGroupBox">
-      <property name="title">
-       <string>Sync to server</string>
-      </property>
-      <property name="checkable">
-       <bool>false</bool>
-      </property>
-      <property name="checked">
-       <bool>false</bool>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <widget class="QCheckBox" name="remoteRemoteAllCheckBox">
-         <property name="text">
-          <string>Remove everything and copy anew</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="serverClearCheckbox">
-         <property name="text">
-          <string>Clear with ZIMA-PTC-Cleaner before sync</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <layout class="QHBoxLayout" name="horizontalLayout_6">
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="pixmap">
+         <pixmap resource="../ZIMA-CAD-Sync.qrc">:/gfx/up.png</pixmap>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="serverGroupBox">
+        <property name="title">
+         <string>Sync to server</string>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <widget class="QPushButton" name="syncToServerButton">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
+          <widget class="QCheckBox" name="remoteRemoteAllCheckBox">
            <property name="text">
-            <string>Sync to server</string>
-           </property>
-           <property name="icon">
-            <iconset resource="../ZIMA-CAD-Sync.qrc">
-             <normaloff>:/gfx/up.png</normaloff>:/gfx/up.png</iconset>
+            <string>Remove everything and copy anew</string>
            </property>
           </widget>
          </item>
          <item>
-          <spacer name="horizontalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+          <widget class="QCheckBox" name="serverClearCheckbox">
+           <property name="text">
+            <string>Clear with ZIMA-PTC-Cleaner before sync</string>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <item>
+            <widget class="QPushButton" name="syncToServerButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Sync to server</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QProgressBar" name="serverProgressBar">
+             <property name="value">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="abortServerButton">
+             <property name="text">
+              <string>Abor&amp;t</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../ZIMA-CAD-Sync.qrc">
+               <normaloff>:/gfx/stop.png</normaloff>:/gfx/stop.png</iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
-       </item>
-      </layout>
-     </widget>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item>
-     <widget class="QGroupBox" name="localGroupBox">
-      <property name="title">
-       <string>Sync to local</string>
-      </property>
-      <property name="checkable">
-       <bool>false</bool>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QGroupBox" name="diffDirGroupBox">
-         <property name="title">
-          <string>Sync to different directory</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
-          <item>
-           <widget class="QLineEdit" name="diffDirLineEdit"/>
-          </item>
-          <item>
-           <widget class="QToolButton" name="diffDirToolButton">
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="localRemoveFirstCheckBox">
-         <property name="text">
-          <string>Remove everything and copy anew</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="localCleanCheckBox">
-         <property name="text">
-          <string>Clean with ZIMA-PTC-Cleaner after sync</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <layout class="QHBoxLayout" name="horizontalLayout_7">
+      <item>
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="pixmap">
+         <pixmap resource="../ZIMA-CAD-Sync.qrc">:/gfx/down.png</pixmap>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="localGroupBox">
+        <property name="title">
+         <string>Sync to local</string>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
-          <widget class="QPushButton" name="syncToLocalButton">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+          <widget class="QGroupBox" name="diffDirGroupBox">
+           <property name="title">
+            <string>Sync to different directory</string>
            </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <widget class="QLineEdit" name="diffDirLineEdit"/>
+            </item>
+            <item>
+             <widget class="QToolButton" name="diffDirToolButton">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="localRemoveFirstCheckBox">
            <property name="text">
-            <string>Sync to local</string>
-           </property>
-           <property name="icon">
-            <iconset resource="../ZIMA-CAD-Sync.qrc">
-             <normaloff>:/gfx/down.png</normaloff>:/gfx/down.png</iconset>
+            <string>Remove everything and copy anew</string>
            </property>
           </widget>
          </item>
          <item>
-          <spacer name="horizontalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+          <widget class="QCheckBox" name="localCleanCheckBox">
+           <property name="text">
+            <string>Clean with ZIMA-PTC-Cleaner after sync</string>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QPushButton" name="syncToLocalButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Sync to local</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QProgressBar" name="localProgressBar">
+             <property name="value">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="abortLocalButton">
+             <property name="text">
+              <string>Abort</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../ZIMA-CAD-Sync.qrc">
+               <normaloff>:/gfx/stop.png</normaloff>:/gfx/stop.png</iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
-       </item>
-      </layout>
-     </widget>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item>
      <widget class="QGroupBox" name="groupBox_4">
@@ -334,22 +397,10 @@
         </property>
        </spacer>
       </item>
-      <item>
-       <widget class="QPushButton" name="abortButton">
-        <property name="text">
-         <string>Abor&amp;t</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../ZIMA-CAD-Sync.qrc">
-          <normaloff>:/gfx/stop.png</normaloff>:/gfx/stop.png</iconset>
-        </property>
-       </widget>
-      </item>
      </layout>
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>

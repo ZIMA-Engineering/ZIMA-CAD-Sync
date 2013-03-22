@@ -39,16 +39,16 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(syncer, SIGNAL(remoteStatus(bool)), this, SLOT(remoteStatus(bool)));
 	connect(syncer, SIGNAL(done()), this, SLOT(syncDone()));
 
-	progressBar = new QProgressBar(this);
-	statusBar()->addWidget(progressBar, 100);
-	progressBar->hide();
-	progressBar->setValue(0);
+	ui->serverProgressBar->hide();
+	ui->localProgressBar->hide();
 
 	connect(syncer, SIGNAL(fileTransferProgress(int,int)), this, SLOT(updateTransferProgress(int,int)));
 
-	ui->abortButton->hide();
+	ui->abortServerButton->hide();
+	ui->abortLocalButton->hide();
 
-	connect(ui->abortButton, SIGNAL(clicked()), this, SLOT(abortSync()));
+	connect(ui->abortServerButton, SIGNAL(clicked()), this, SLOT(abortSync()));
+	connect(ui->abortLocalButton, SIGNAL(clicked()), this, SLOT(abortSync()));
 
 	widgetsToToggle << ui->directoryLineEdit
 			<< ui->serverLineEdit
@@ -56,14 +56,17 @@ MainWindow::MainWindow(QWidget *parent) :
 			<< ui->passwordLineEdit
 			<< ui->directoryOnServerLineEdit
 			<< ui->savePasswordCheckBox
-			<< ui->localGroupBox
-			<< ui->serverGroupBox
 			<< ui->directoryButton
 			<< ui->settingsButton
 			<< ui->filterListWidget
 			<< ui->syncCadDataCheckBox
 			<< ui->syncToLocalButton
-			<< ui->syncToServerButton;
+			<< ui->syncToServerButton
+			<< ui->remoteRemoteAllCheckBox
+			<< ui->serverClearCheckbox
+			<< ui->localRemoveFirstCheckBox
+			<< ui->localCleanCheckBox
+			<< ui->diffDirGroupBox;
 }
 
 MainWindow::~MainWindow()
@@ -94,7 +97,9 @@ void MainWindow::setDirectory(QString path)
 
 	qDeleteAll(items);
 
-	ui->dirNameLabel->setText("<h1>" + path.split("/").last() + "</h1>");
+	QDir d(path);
+
+	ui->dirNameLabel->setText("<h1>" + d.dirName() + "</h1>");
 }
 
 void MainWindow::selectDirectoryDialog()
@@ -190,9 +195,6 @@ void MainWindow::sync()
 	else
 		syncer->syncToServer();
 
-	progressBar->show();
-	ui->abortButton->show();
-
 	foreach(QWidget *w, widgetsToToggle)
 		w->setEnabled(false);
 }
@@ -202,6 +204,9 @@ void MainWindow::syncToLocal()
 	syncDirection = ToLocal;
 
 	sync();
+
+	ui->localProgressBar->show();
+	ui->abortLocalButton->show();
 }
 
 void MainWindow::syncToServer()
@@ -209,6 +214,9 @@ void MainWindow::syncToServer()
 	syncDirection = ToServer;
 
 	sync();
+
+	ui->serverProgressBar->show();
+	ui->abortServerButton->show();
 }
 
 void MainWindow::remoteStatus(bool changesAvailable)
@@ -222,14 +230,26 @@ void MainWindow::remoteStatus(bool changesAvailable)
 
 void MainWindow::updateTransferProgress(int done, int total)
 {
-	progressBar->setRange(0, total);
-	progressBar->setValue(done);
+	if(syncDirection == ToLocal)
+	{
+		ui->localProgressBar->setRange(0, total);
+		ui->localProgressBar->setValue(done);
+	} else {
+		ui->serverProgressBar->setRange(0, total);
+		ui->serverProgressBar->setValue(done);
+	}
 }
 
 void MainWindow::syncDone()
 {
-	progressBar->hide();
-	ui->abortButton->hide();
+	if(syncDirection == ToLocal)
+	{
+		ui->localProgressBar->hide();
+		ui->abortLocalButton->hide();
+	} else {
+		ui->serverProgressBar->hide();
+		ui->abortServerButton->hide();
+	}
 
 	foreach(QWidget *w, widgetsToToggle)
 		w->setEnabled(true);
@@ -247,7 +267,7 @@ void MainWindow::syncDone()
 		}
 	}
 
-	statusBar()->showMessage(tr("Sync done"));
+	//statusBar()->showMessage(tr("Sync done"));
 
 	if(ui->exitCheckBox->isChecked())
 		QApplication::quit();
@@ -257,13 +277,22 @@ void MainWindow::abortSync()
 {
 	syncer->abort();
 
-	progressBar->hide();
-	ui->abortButton->hide();
+	if(syncDirection == ToLocal)
+	{
+		ui->localProgressBar->hide();
+		ui->abortLocalButton->hide();
+	} else {
+		ui->serverProgressBar->hide();
+		ui->abortServerButton->hide();
+	}
+
+	ui->abortServerButton->hide();
+	ui->abortLocalButton->hide();
 
 	foreach(QWidget *w, widgetsToToggle)
 		w->setEnabled(true);
 
-	statusBar()->showMessage(tr("Sync aborted"));
+	//statusBar()->showMessage(tr("Sync aborted"));
 }
 
 void MainWindow::openSettings()

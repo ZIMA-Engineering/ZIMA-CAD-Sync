@@ -32,14 +32,18 @@
         <source>Unable to connect to host
 
 </source>
-        <translation>Připojení k serveru selhalo</translation>
+        <translation>Připojení k serveru selhalo
+
+</translation>
     </message>
     <message>
         <location filename="../src/FtpSynchronizer.cpp" line="543"/>
         <source>Unable to login
 
 </source>
-        <translation>Pokus o login selhal</translation>
+        <translation>Pokus o login selhal
+
+</translation>
     </message>
 </context>
 <context>

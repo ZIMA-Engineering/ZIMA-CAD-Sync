@@ -16,10 +16,10 @@ void FtpSynchronizer::connectToServer()
 {
 	if(ftp->state() == QFtp::Unconnected || ftp->state() == QFtp::Closing)
 	{
-		ftp->connectToHost(host);
-		ftp->login(username, passwd);
+		connectId = ftp->connectToHost(host);
+		loginId = ftp->login(username, passwd);
 	} else if(ftp->state() > QFtp::Unconnected && ftp->state() != QFtp::LoggedIn && !username.isEmpty())
-		ftp->login(username, passwd);
+		loginId = ftp->login(username, passwd);
 }
 
 void FtpSynchronizer::syncToLocal()
@@ -88,6 +88,7 @@ void FtpSynchronizer::cmdFromQueue()
 		qDebug() <<"QFtp instance created" << ftp;
 
 		connect(ftp, SIGNAL(stateChanged(int)), this, SLOT(stateChange(int)));
+		connect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(ftpCommandFinished(int,bool)));
 		connect(ftp, SIGNAL(done(bool)), this, SLOT(commandSequenceDone(bool)));
 	}
 
@@ -529,6 +530,17 @@ void FtpSynchronizer::uploadDir(QString path, QString targetPath)
 void FtpSynchronizer::stateChange(int state)
 {
 	qDebug() << "State is" << state;
+}
+
+void FtpSynchronizer::ftpCommandFinished(int id, bool error)
+{
+	if(!error || action == Checking)
+		return;
+
+	if(id == connectId)
+		emit errorOccured(tr("Unable to connect to host\n\n") + ftp->errorString());
+	else if(id == loginId)
+		emit errorOccured(tr("Unable to login\n\n") + ftp->errorString());
 }
 
 void FtpSynchronizer::commandSequenceDone(bool error)

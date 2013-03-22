@@ -50,6 +50,8 @@ private:
 	Action action;
 	QFtp *ftp;
 	QList<Action> actions;
+	int connectId;
+	int loginId;
 
 	// Check for updates
 	QTemporaryFile *updateTmp;
@@ -76,6 +78,7 @@ private slots:
 	void lastSyncCommandFinished(int id, bool error);
 	void removeAllCommandFinished(int id, bool error);
 	void commandSequenceDone(bool error);
+	void ftpCommandFinished(int id, bool error);
 	
 };
 

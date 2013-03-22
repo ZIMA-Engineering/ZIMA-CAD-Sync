@@ -2,6 +2,7 @@
 #include <QProcess>
 #include <QDebug>
 #include <QListWidgetItem>
+#include <QMessageBox>
 
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
@@ -42,6 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(syncer, SIGNAL(localizedLabelFound(QString)), this, SLOT(setDirectoryLabel(QString)));
 	connect(syncer, SIGNAL(remoteStatus(bool)), this, SLOT(remoteStatus(bool)));
 	connect(syncer, SIGNAL(done()), this, SLOT(syncDone()));
+	connect(syncer, SIGNAL(errorOccured(QString)), this, SLOT(reportError(QString)));
 
 	ui->serverProgressBar->hide();
 	ui->localProgressBar->hide();
@@ -323,4 +325,9 @@ void MainWindow::setDirectoryLogo(QPixmap logo, bool showText)
 void MainWindow::setDirectoryLabel(QString label)
 {
 	ui->dirNameLabel->setText("<h1>" + label + "</h1>");
+}
+
+void MainWindow::reportError(QString err)
+{
+	QMessageBox::warning(this, tr("Error occured"), err);
 }

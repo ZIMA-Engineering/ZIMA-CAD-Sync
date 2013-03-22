@@ -41,5 +41,8 @@ RESOURCES += \
     ZIMA-CAD-Sync.qrc
 
 OTHER_FILES += \
-    src/ZIMA-CAD-Sync.rc
+    src/ZIMA-CAD-Sync.rc \
+    AUTHORS \
+    LICENSE \
+    README
 

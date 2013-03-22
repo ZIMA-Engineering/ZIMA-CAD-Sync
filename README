@@ -1,0 +1,25 @@
+ZIMA-CAD-Sync
+=============
+
+Requirements
+------------
+Qt 4.x - modules core, gui and network, qmake
+
+Installation
+------------
+  tar xzf ZIMA-CAD-Sync-1.0.0-src.tar.gz
+  cd ZIMA-CAD-Sync-1.0.0-src
+  qmake
+  make
+
+Now you've got executable ZIMA-CAD-Sync, you can move it to /usr/local/bin
+or wherever you want.
+
+Useful information
+------------------
+System context menu works only in Windows. You have to run it once
+as admin so it can create the menu in registry.
+
+If you want to use translations, you have to put the translation file
+next to ZIMA-CAD-Sync executable or to subdir 'locale', otherwise it won't
+be found. ZIMA-CAD-Sync tries to load the language your system is using.

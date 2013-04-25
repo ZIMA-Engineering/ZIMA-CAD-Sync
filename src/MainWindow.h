@@ -26,8 +26,7 @@ public slots:
 	void selectDiffDirDialog();
 	void selectLocalSync(bool checked);
 	void selectRemoteSync(bool checked);
-	void changeServerInfo();
-	void directoryConfigRead(QString host, QString username, QString passwd, QString remoteDir, bool syncCadData);
+	void directoryConfigLoaded(bool syncCadData);
 	void sync();
 	void syncToLocal();
 	void syncToServer();
@@ -36,7 +35,6 @@ public slots:
 	void syncDone();
 	void abortSync();
 	void openSettings();
-	void saveDirectoryConfig();
 	void setDirectoryLogo(QPixmap logo, bool showText);
 	void setDirectoryLabel(QString label);
 	void reportError(QString err);

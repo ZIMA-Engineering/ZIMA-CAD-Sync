@@ -45,12 +45,15 @@ signals:
 	void remoteStatus(bool changesAvailable);
 	void done();
 	void errorOccured(QString errstr);
-	void directoryConfigRead(QString, QString, QString, QString, bool);
+	void serverInfoLoaded(QString, QString, QString, QString);
+	void directoryConfigLoaded(bool syncCadData);
 	void logoFound(QPixmap, bool);
 	void localizedLabelFound(QString);
 	void fileTransferProgress(quint64 done, quint64 total);
 	
 public slots:
+	void setServerInfo(QString host, QString username, QString passwd, QString remoteDir);
+	void saveLocalDirectoryConfig(bool pass);
 	virtual void syncToLocal() = 0;
 	virtual void syncToServer() = 0;
 	virtual void abort() = 0;

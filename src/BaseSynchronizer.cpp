@@ -48,6 +48,14 @@ void BaseSynchronizer::setSyncCadData(bool sync)
 	syncCadData = sync;
 }
 
+void BaseSynchronizer::setServerInfo(QString host, QString username, QString passwd, QString remoteDir)
+{
+	this->host = host;
+	this->username = username;
+	this->passwd = passwd;
+	this->remoteDir = remoteDir;
+}
+
 QList<SyncItem*> BaseSynchronizer::syncItems()
 {
 	QDir dir(localDir);
@@ -97,7 +105,8 @@ void BaseSynchronizer::fetchLocalDirectoryConfig()
 
 	cfg.endGroup();
 
-	emit directoryConfigRead(host, username, passwd, remoteDir, syncCadData);
+	emit serverInfoLoaded(host, username, passwd, remoteDir);
+	emit directoryConfigLoaded(syncCadData);
 }
 
 void BaseSynchronizer::probeMetadata()
@@ -153,7 +162,7 @@ void BaseSynchronizer::probeMetadata()
 		emit localizedLabelFound(label);
 }
 
-void BaseSynchronizer::saveLocalDirectoryConfig(bool pass, QList<SyncItem*> syncItems, bool cadData)
+void BaseSynchronizer::saveLocalDirectoryConfig(bool pass)
 {
 	QString configDir = localDir + "/" + DIRECTORY_CONFIG_DIR;
 
@@ -173,6 +182,24 @@ void BaseSynchronizer::saveLocalDirectoryConfig(bool pass, QList<SyncItem*> sync
 		cfg.setValue("Password", passwd);
 
 	cfg.setValue("RemoteDir", remoteDir);
+
+	cfg.endGroup();
+}
+
+void BaseSynchronizer::saveLocalDirectoryConfig(bool pass, QList<SyncItem*> syncItems, bool cadData)
+{
+	saveLocalDirectoryConfig(pass);
+
+	QString configDir = localDir + "/" + DIRECTORY_CONFIG_DIR;
+
+	if(!QFile::exists(configDir))
+	{
+		QDir d(localDir);
+		d.mkdir(DIRECTORY_CONFIG_DIR);
+	}
+
+	QSettings cfg(localDir + "/" + DIRECTORY_CONFIG_PATH, QSettings::IniFormat, this);
+	cfg.beginGroup("Sync");
 
 	cfg.setValue("SyncCadData", cadData);
 

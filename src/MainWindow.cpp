@@ -20,11 +20,6 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->localGroupBox, SIGNAL(clicked(bool)), this, SLOT(selectLocalSync(bool)));
 	connect(ui->serverGroupBox, SIGNAL(clicked(bool)), this, SLOT(selectRemoteSync(bool)));
 
-	connect(ui->serverLineEdit, SIGNAL(textEdited(QString)), this, SLOT(changeServerInfo()));
-	connect(ui->usernameLineEdit, SIGNAL(textEdited(QString)), this, SLOT(changeServerInfo()));
-	connect(ui->passwordLineEdit, SIGNAL(textEdited(QString)), this, SLOT(changeServerInfo()));
-	connect(ui->directoryOnServerLineEdit, SIGNAL(textEdited(QString)), this, SLOT(changeServerInfo()));
-
 	connect(ui->syncToLocalButton, SIGNAL(clicked()), this, SLOT(syncToLocal()));
 	connect(ui->syncToServerButton, SIGNAL(clicked()), this, SLOT(syncToServer()));
 
@@ -34,11 +29,12 @@ MainWindow::MainWindow(QWidget *parent) :
 	settingsDlg = new SettingsDialog(this);
 	connect(ui->settingsButton, SIGNAL(clicked()), this, SLOT(openSettings()));
 
-	connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(saveDirectoryConfig()));
-
 	syncer = new FtpSynchronizer(this);
 
-	connect(syncer, SIGNAL(directoryConfigRead(QString,QString,QString,QString,bool)), this, SLOT(directoryConfigRead(QString,QString,QString,QString,bool)));
+	connect(syncer, SIGNAL(serverInfoLoaded(QString,QString,QString,QString)), settingsDlg, SLOT(directoryConfigRead(QString,QString,QString,QString)));
+	connect(settingsDlg, SIGNAL(serverInfoChanged(QString,QString,QString,QString)), syncer, SLOT(setServerInfo(QString,QString,QString,QString)));
+	connect(settingsDlg, SIGNAL(saveServerInfo(bool)), syncer, SLOT(saveLocalDirectoryConfig(bool)));
+	connect(syncer, SIGNAL(directoryConfigLoaded(bool)), this, SLOT(directoryConfigLoaded(bool)));
 	connect(syncer, SIGNAL(logoFound(QPixmap,bool)), this, SLOT(setDirectoryLogo(QPixmap,bool)));
 	connect(syncer, SIGNAL(localizedLabelFound(QString)), this, SLOT(setDirectoryLabel(QString)));
 	connect(syncer, SIGNAL(remoteStatus(bool)), this, SLOT(remoteStatus(bool)));
@@ -56,15 +52,13 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->abortServerButton->hide();
 	ui->abortLocalButton->hide();
 
+	ui->serverProgressLabel->hide();
+	ui->localProgressLabel->hide();
+
 	connect(ui->abortServerButton, SIGNAL(clicked()), this, SLOT(abortSync()));
 	connect(ui->abortLocalButton, SIGNAL(clicked()), this, SLOT(abortSync()));
 
 	widgetsToToggle << ui->directoryLineEdit
-			<< ui->serverLineEdit
-			<< ui->usernameLineEdit
-			<< ui->passwordLineEdit
-			<< ui->directoryOnServerLineEdit
-			<< ui->savePasswordCheckBox
 			<< ui->directoryButton
 			<< ui->settingsButton
 			<< ui->filterListWidget
@@ -138,21 +132,9 @@ void MainWindow::selectRemoteSync(bool checked)
 	ui->localGroupBox->setChecked(!checked);
 }
 
-void MainWindow::directoryConfigRead(QString host, QString username, QString passwd, QString remoteDir, bool syncCadData)
+void MainWindow::directoryConfigLoaded(bool syncCadData)
 {
-	ui->serverLineEdit->setText(host);
-	ui->usernameLineEdit->setText(username);
-	ui->passwordLineEdit->setText(passwd);
-	ui->directoryOnServerLineEdit->setText(remoteDir);
 	ui->syncCadDataCheckBox->setChecked(syncCadData);
-}
-
-void MainWindow::changeServerInfo()
-{
-	syncer->setServer(ui->serverLineEdit->text());
-	syncer->setUsername(ui->usernameLineEdit->text());
-	syncer->setPassword(ui->passwordLineEdit->text());
-	syncer->setRemoteDir(ui->directoryOnServerLineEdit->text());
 }
 
 void MainWindow::sync()
@@ -181,7 +163,23 @@ void MainWindow::sync()
 
 	syncer->setDeleteFirst( syncDirection == ToLocal ? ui->localRemoveFirstCheckBox->isChecked() : ui->remoteRemoteAllCheckBox->isChecked() );
 
-	saveDirectoryConfig();
+	QList<SyncItem*> syncItems;
+	int cnt = ui->filterListWidget->count();
+
+	for(int i = 0; i < cnt; i++)
+	{
+		QListWidgetItem *wi = ui->filterListWidget->item(i);
+		SyncItem *si = new SyncItem;
+		si->sync = wi->checkState() == Qt::Checked;
+		si->name = wi->text();
+
+		syncItems << si;
+	}
+
+	syncer->saveLocalDirectoryConfig(false, syncItems, ui->syncCadDataCheckBox->isChecked());
+	syncer->applyFilters(syncItems);
+
+	qDeleteAll(syncItems);
 
 	syncer->setSyncCadData(ui->syncCadDataCheckBox->isChecked());
 
@@ -306,27 +304,6 @@ void MainWindow::openSettings()
 {
 	if(settingsDlg->exec())
 		settingsDlg->saveSettings();
-}
-
-void MainWindow::saveDirectoryConfig()
-{
-	QList<SyncItem*> syncItems;
-	int cnt = ui->filterListWidget->count();
-
-	for(int i = 0; i < cnt; i++)
-	{
-		QListWidgetItem *wi = ui->filterListWidget->item(i);
-		SyncItem *si = new SyncItem;
-		si->sync = wi->checkState() == Qt::Checked;
-		si->name = wi->text();
-
-		syncItems << si;
-	}
-
-	syncer->saveLocalDirectoryConfig(ui->savePasswordCheckBox->isChecked(), syncItems, ui->syncCadDataCheckBox->isChecked());
-	syncer->applyFilters(syncItems);
-
-	qDeleteAll(syncItems);
 }
 
 void MainWindow::setDirectoryLogo(QPixmap logo, bool showText)

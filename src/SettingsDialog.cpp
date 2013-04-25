@@ -60,8 +60,30 @@ void SettingsDialog::showPtcCleanerPathDialog()
 		ui->ptcCleanerLineEdit->setText(path);
 }
 
+void SettingsDialog::saveButtonClicked()
+{
+	emit serverInfoChanged(ui->serverLineEdit->text(),
+			       ui->usernameLineEdit->text(),
+			       ui->passwordLineEdit->text(),
+			       ui->directoryOnServerLineEdit->text());
+	emit saveServerInfo(true);
+}
+
+void SettingsDialog::directoryConfigRead(QString host, QString username, QString passwd, QString remoteDir)
+{
+	ui->serverLineEdit->setText(host);
+	ui->usernameLineEdit->setText(username);
+	ui->passwordLineEdit->setText(passwd);
+	ui->directoryOnServerLineEdit->setText(remoteDir);
+}
+
 void SettingsDialog::saveSettings()
 {
 	settings->setValue("EnableContextMenu", ui->enableSystemContextMenuCheckBox->isChecked());
 	settings->setValue("ZimaPtcCleanerPath", zimaPtcCleanerPath());
+
+	emit serverInfoChanged(ui->serverLineEdit->text(),
+			       ui->usernameLineEdit->text(),
+			       ui->passwordLineEdit->text(),
+			       ui->directoryOnServerLineEdit->text());
 }

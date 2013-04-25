@@ -18,8 +18,12 @@ public:
 	QString zimaPtcCleanerPath();
 	void saveSettings();
 
+public slots:
+	void directoryConfigRead(QString host, QString username, QString passwd, QString remoteDir);
+
 private slots:
 	void showPtcCleanerPathDialog();
+	void saveButtonClicked();
 #ifdef Q_OS_WIN32
     void enableSystemContextMenuChanged(bool checked);
 #endif
@@ -30,6 +34,10 @@ private:
 #ifdef Q_OS_WIN32
     QSettings *contextMenuSettings;
 #endif
+
+signals:
+    void serverInfoChanged(QString host, QString username, QString passwd, QString remoteDir);
+    void saveServerInfo(bool pass);
 };
 
 #endif // SETTINGSDIALOG_H

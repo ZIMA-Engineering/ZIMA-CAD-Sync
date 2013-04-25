@@ -46,9 +46,12 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(syncer, SIGNAL(errorOccured(QString)), this, SLOT(reportError(QString)));
 
 	ui->serverProgressBar->hide();
-	ui->localProgressBar->hide();
+	ui->serverProgressBar->setRange(0, 100);
 
-	connect(syncer, SIGNAL(fileTransferProgress(int,int)), this, SLOT(updateTransferProgress(int,int)));
+	ui->localProgressBar->hide();
+	ui->serverProgressBar->setRange(0, 100);
+
+	connect(syncer, SIGNAL(fileTransferProgress(quint64,quint64)), this, SLOT(updateTransferProgress(quint64,quint64)));
 
 	ui->abortServerButton->hide();
 	ui->abortLocalButton->hide();
@@ -198,6 +201,7 @@ void MainWindow::syncToLocal()
 	sync();
 
 	ui->localProgressBar->show();
+	ui->localProgressLabel->show();
 	ui->abortLocalButton->show();
 }
 
@@ -208,6 +212,7 @@ void MainWindow::syncToServer()
 	sync();
 
 	ui->serverProgressBar->show();
+	ui->serverProgressLabel->show();
 	ui->abortServerButton->show();
 }
 
@@ -220,15 +225,21 @@ void MainWindow::remoteStatus(bool changesAvailable)
 	else ui->localGroupBox->setTitle(tr("Sync to local"));
 }
 
-void MainWindow::updateTransferProgress(int done, int total)
+void MainWindow::updateTransferProgress(quint64 done, quint64 total)
 {
+	int p = (double)done / total * 100;
+	QString sDone = QString::number(done / 1024.0, 'f', 2);
+	QString sTotal = QString::number(total / 1024.0, 'f', 2);
+
 	if(syncDirection == ToLocal)
 	{
-		ui->localProgressBar->setRange(0, total);
-		ui->localProgressBar->setValue(done);
+		//ui->localProgressBar->setFormat(QString("%1/%2 MB - %p %").arg(sDone).arg(sTotal));
+		ui->localProgressLabel->setText(QString("%1/%2 MB").arg(sDone).arg(sTotal));
+		ui->localProgressBar->setValue(p);
 	} else {
-		ui->serverProgressBar->setRange(0, total);
-		ui->serverProgressBar->setValue(done);
+		//ui->serverProgressBar->setFormat(QString("%1/%2 MB - %p %").arg(sDone).arg(sTotal));
+		ui->serverProgressLabel->setText(QString("%1/%2 MB").arg(sDone).arg(sTotal));
+		ui->serverProgressBar->setValue(p);
 	}
 }
 
@@ -237,9 +248,11 @@ void MainWindow::syncDone()
 	if(syncDirection == ToLocal)
 	{
 		ui->localProgressBar->hide();
+		ui->localProgressLabel->hide();
 		ui->abortLocalButton->hide();
 	} else {
 		ui->serverProgressBar->hide();
+		ui->serverProgressLabel->hide();
 		ui->abortServerButton->hide();
 	}
 
@@ -272,9 +285,11 @@ void MainWindow::abortSync()
 	if(syncDirection == ToLocal)
 	{
 		ui->localProgressBar->hide();
+		ui->localProgressLabel->hide();
 		ui->abortLocalButton->hide();
 	} else {
 		ui->serverProgressBar->hide();
+		ui->serverProgressLabel->hide();
 		ui->abortServerButton->hide();
 	}
 

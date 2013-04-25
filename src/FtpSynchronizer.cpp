@@ -8,7 +8,8 @@ FtpSynchronizer::FtpSynchronizer(QObject *parent) :
 	BaseSynchronizer(parent),
 	action(None),
 	ftp(0),
-	filesTotal(0)
+	filesTotal(0),
+	totalFileSize(0)
 {
 }
 
@@ -26,6 +27,9 @@ void FtpSynchronizer::syncToLocal()
 {
 	qDebug() << "Ok, syncing to local";
 
+	ftp->deleteLater();
+	ftp = 0;
+
 	if(!QFile::exists(localDir))
 	{
 		QDir d;
@@ -38,7 +42,9 @@ void FtpSynchronizer::syncToLocal()
 		localDeleteAll(localDir);
 
 	filesTotal = 0;
-	filesDone = 0;
+	totalFileSizeDone = 0;
+	totalFileSize = 0;
+	lastDone = 0;
 
 	cmdFromQueue();
 }
@@ -47,13 +53,18 @@ void FtpSynchronizer::syncToServer()
 {
 	qDebug() << "Ok, syncing to server";
 
+	ftp->deleteLater();
+	ftp = 0;
+
 	if(deleteFirst)
 		actions << BuildingTree << RemovingAll;
 
 	actions << Uploading << SettingLastSync;
 
 	filesTotal = 0;
-	filesDone = 0;
+	totalFileSizeDone = 0;
+	totalFileSize = 0;
+	lastDone = 0;
 
 	cmdFromQueue();
 }
@@ -74,10 +85,14 @@ void FtpSynchronizer::cmdFromQueue()
 		}
 
 		return;
+
 	}
 
-	if(ftp && ftp->hasPendingCommands())
+	if(ftp && ftp->hasPendingCommands() && action != None)
+	{
+		qDebug() << "Busy, hold on";
 		return;
+	}
 
 	action = actions.takeFirst();
 
@@ -90,6 +105,7 @@ void FtpSynchronizer::cmdFromQueue()
 		connect(ftp, SIGNAL(stateChanged(int)), this, SLOT(stateChange(int)));
 		connect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(ftpCommandFinished(int,bool)));
 		connect(ftp, SIGNAL(done(bool)), this, SLOT(commandSequenceDone(bool)));
+		connect(ftp, SIGNAL(dataTransferProgress(qint64,qint64)), this, SLOT(dataTransferProgress(qint64,qint64)));
 	}
 
 	switch(action)
@@ -158,7 +174,7 @@ void FtpSynchronizer::checkForUpdates()
 	if(action != None)
 	{
 		qDebug() << "Aborting" << action;
-		ftp->abort();
+		//ftp->abort();
 		disconnect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(checkCommandFinished(int,bool)));
 	}
 
@@ -209,9 +225,13 @@ void FtpSynchronizer::checkCommandFinished(int id, bool error)
 
 void FtpSynchronizer::buildTreeCommandFinished(int id, bool error)
 {
+	if(buildListId != id)
+		return;
+
 	if(error)
 	{
 		qDebug() << "Error occured, we're screwed" << ftp->errorString();
+		emit errorOccured(tr("Unable to download files\n\n") + ftp->errorString());
 		return;
 	}
 
@@ -219,7 +239,7 @@ void FtpSynchronizer::buildTreeCommandFinished(int id, bool error)
 	{
 		currentItem = dirsToList.takeFirst();
 		qDebug() << "Listing" << currentItem->targetPath;
-		ftp->list(currentItem->targetPath);
+		buildListId = ftp->list(currentItem->targetPath);
 	}
 }
 
@@ -247,7 +267,8 @@ void FtpSynchronizer::downloadCommandFinished(int id, bool error)
 	if(it->fd)
 		it->fd->close();
 
-	emit fileTransferProgress(++filesDone, filesTotal);
+	lastDone = 0;
+	//emit fileTransferProgress(++filesDone, filesTotal);
 }
 
 void FtpSynchronizer::uploadCommandFinished(int id, bool error)
@@ -288,7 +309,8 @@ void FtpSynchronizer::uploadCommandFinished(int id, bool error)
 	if(it->fd)
 		it->fd->close();
 
-	emit fileTransferProgress(++filesDone, filesTotal);
+	lastDone = 0;
+	//emit fileTransferProgress(++filesDone, filesTotal);
 
 	delete it;
 
@@ -336,7 +358,7 @@ void FtpSynchronizer::buildRemoteTree()
 	rootItem->localPath = localDir;
 	rootItem->targetPath = remoteDir;
 
-	ftp->list(remoteDir);
+	buildListId = ftp->list(remoteDir);
 
 	qDebug() << "Listing" << remoteDir;
 }
@@ -470,6 +492,8 @@ void FtpSynchronizer::downloadTree(Item *it)
 			child->fd = new QFile(child->localPath);
 			child->fd->open(QIODevice::WriteOnly);
 
+			totalFileSize += child->size / 1024;
+
 			files[ ftp->get(child->targetPath, child->fd) ] = child;
 			filesTotal++;
 		}
@@ -521,10 +545,22 @@ void FtpSynchronizer::uploadDir(QString path, QString targetPath)
 			it->fd = new QFile(i.absoluteFilePath());
 			it->fd->open(QIODevice::ReadOnly);
 
+			totalFileSize += it->fd->size() / 1024;
+
 			files[ ftp->put(it->fd, it->targetPath) ] = it;
 			filesTotal++;
 		}
 	}
+}
+
+void FtpSynchronizer::dataTransferProgress(qint64 done, qint64 total)
+{
+	done /= 1024;
+	totalFileSizeDone += lastDone ? (done - lastDone) : done;
+
+	emit fileTransferProgress(totalFileSizeDone, totalFileSize);
+
+	lastDone = done;
 }
 
 void FtpSynchronizer::stateChange(int state)
@@ -534,6 +570,9 @@ void FtpSynchronizer::stateChange(int state)
 
 void FtpSynchronizer::ftpCommandFinished(int id, bool error)
 {
+	if(id == loginId)
+		qDebug() << "Logged in.." << error;
+
 	if(!error || action == Checking)
 		return;
 
@@ -580,6 +619,8 @@ void FtpSynchronizer::commandSequenceDone(bool error)
 		qDebug() << "Unknown action" << action;
 		break;
 	}
+
+	action = None;
 
 	cmdFromQueue();
 }

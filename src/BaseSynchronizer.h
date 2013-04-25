@@ -48,7 +48,7 @@ signals:
 	void directoryConfigRead(QString, QString, QString, QString, bool);
 	void logoFound(QPixmap, bool);
 	void localizedLabelFound(QString);
-	void fileTransferProgress(int done, int total);
+	void fileTransferProgress(quint64 done, quint64 total);
 	
 public slots:
 	virtual void syncToLocal() = 0;

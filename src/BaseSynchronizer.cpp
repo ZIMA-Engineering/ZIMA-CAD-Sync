@@ -119,6 +119,8 @@ void BaseSynchronizer::probeMetadata()
 		return;
 
 	QSettings metadata(metadataPath, QSettings::IniFormat);
+	metadata.setIniCodec("utf-8");
+
 	QString currentAppLang = QLocale::system().name().left(2);
 	QString lang;
 

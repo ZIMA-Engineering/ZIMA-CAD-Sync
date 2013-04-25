@@ -61,10 +61,13 @@ private:
 	Item *rootItem;
 	Item *currentItem;
 	QList<Item*> dirsToList;
+	int buildListId;
 
 	// Upload & download
 	int filesTotal;
-	int filesDone;
+	quint64 totalFileSize;
+	quint64 totalFileSizeDone;
+	quint64 lastDone;
 	QMap<int, Item*> files;
 	QTemporaryFile *remoteLastSyncTmp;
 
@@ -79,6 +82,7 @@ private slots:
 	void removeAllCommandFinished(int id, bool error);
 	void commandSequenceDone(bool error);
 	void ftpCommandFinished(int id, bool error);
+	void dataTransferProgress(qint64 done, qint64 total);
 	
 };
 

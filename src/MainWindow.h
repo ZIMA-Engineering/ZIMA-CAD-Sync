@@ -32,7 +32,7 @@ public slots:
 	void syncToLocal();
 	void syncToServer();
 	void remoteStatus(bool changesAvailable);
-	void updateTransferProgress(int done, int total);
+	void updateTransferProgress(quint64 done, quint64 total);
 	void syncDone();
 	void abortSync();
 	void openSettings();

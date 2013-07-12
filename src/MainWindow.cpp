@@ -85,6 +85,7 @@ void MainWindow::setDirectory(QString path)
 	QDir d(path);
 
 	ui->dirNameLabel->setText("<h1>" + d.dirName() + "</h1>");
+	settingsDlg->setCurrentDirectory(path);
 
 	syncer->setLocalDir(path);
 	syncer->fetchLocalDirectoryConfig();

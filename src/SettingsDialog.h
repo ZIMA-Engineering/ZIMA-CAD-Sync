@@ -16,6 +16,7 @@ public:
 	explicit SettingsDialog(QWidget *parent = 0);
 	~SettingsDialog();
 	QString zimaPtcCleanerPath();
+	void setCurrentDirectory(QString dir);
 	void saveSettings();
 
 public slots:
@@ -24,6 +25,7 @@ public slots:
 private slots:
 	void showPtcCleanerPathDialog();
 	void saveButtonClicked();
+	void autoConfigSubdirectories();
 #ifdef Q_OS_WIN32
     void enableSystemContextMenuChanged(bool checked);
 #endif
@@ -31,6 +33,7 @@ private slots:
 private:
 	Ui::SettingsDialog *ui;
 	QSettings *settings;
+	QString currentDir;
 #ifdef Q_OS_WIN32
     QSettings *contextMenuSettings;
 #endif

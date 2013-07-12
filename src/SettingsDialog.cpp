@@ -1,7 +1,10 @@
 #include <QFileDialog>
+#include <QMessageBox>
+#include <QDebug>
 
 #include "SettingsDialog.h"
 #include "ui_SettingsDialog.h"
+#include "BaseSynchronizer.h"
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
         QDialog(parent),
@@ -11,6 +14,8 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 
 	settings = new QSettings(this);
 
+	connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(saveButtonClicked()));
+	connect(ui->autoConfigButton, SIGNAL(clicked()), this, SLOT(autoConfigSubdirectories()));
 	connect(ui->ptcCleanerPathButton, SIGNAL(clicked()), this, SLOT(showPtcCleanerPathDialog()));
 
 	ui->ptcCleanerLineEdit->setText(settings->value("ZimaPtcCleanerPath").toString());
@@ -33,6 +38,7 @@ SettingsDialog::~SettingsDialog()
 {
 	delete ui;
 }
+
 
 #ifdef Q_OS_WIN32
 void SettingsDialog::enableSystemContextMenuChanged(bool checked)
@@ -60,6 +66,11 @@ void SettingsDialog::showPtcCleanerPathDialog()
 		ui->ptcCleanerLineEdit->setText(path);
 }
 
+void SettingsDialog::setCurrentDirectory(QString dir)
+{
+	currentDir = dir;
+}
+
 void SettingsDialog::saveButtonClicked()
 {
 	emit serverInfoChanged(ui->serverLineEdit->text(),
@@ -67,6 +78,35 @@ void SettingsDialog::saveButtonClicked()
 			       ui->passwordLineEdit->text(),
 			       ui->directoryOnServerLineEdit->text());
 	emit saveServerInfo(true);
+}
+
+void SettingsDialog::autoConfigSubdirectories()
+{
+	QDir d(currentDir);
+	QFileInfoList subdirs = d.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+
+	foreach(QFileInfo subdir, subdirs)
+	{
+		if(subdir.fileName() == DIRECTORY_CONFIG_DIR)
+			continue;
+
+		d.mkpath(subdir.absoluteFilePath() + "/" + DIRECTORY_CONFIG_DIR);
+
+		QSettings cfg(subdir.absoluteFilePath() + "/" + DIRECTORY_CONFIG_PATH, QSettings::IniFormat);
+		cfg.beginGroup("Sync");
+
+		cfg.setValue("Host", ui->serverLineEdit->text());
+		cfg.setValue("Username", ui->usernameLineEdit->text());
+
+		if(ui->savePassSubdirCheckBox->isChecked())
+			cfg.setValue("Password", ui->passwordLineEdit->text());
+
+		cfg.setValue("RemoteDir", ui->directoryOnServerLineEdit->text());
+
+		cfg.endGroup();
+	}
+
+	QMessageBox::information(this, tr("Subdirectories configured"), tr("All subdirectories were successfully configured."));
 }
 
 void SettingsDialog::directoryConfigRead(QString host, QString username, QString passwd, QString remoteDir)

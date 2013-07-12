@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>459</width>
-    <height>320</height>
+    <height>403</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -81,6 +81,35 @@
         </property>
         <property name="text">
          <string>Save including password</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Autoconfigure subdirectories</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QCheckBox" name="savePassSubdirCheckBox">
+        <property name="text">
+         <string>Save password to all subdirectories</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="autoConfigButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Autoconfigure subdirectories</string>
         </property>
        </widget>
       </item>

@@ -45,6 +45,8 @@ private:
 	void initUpload();
 	void downloadTree(Item *it = 0);
 	void uploadDir(QString path, QString targetDir);
+	void downloadBatch();
+	void uploadBatch();
 	void cmdFromQueue();
 
 	Action action;
@@ -68,6 +70,7 @@ private:
 	quint64 totalFileSize;
 	quint64 totalFileSizeDone;
 	quint64 lastDone;
+	QList<Item*> itemsToTransfer;
 	QMap<int, Item*> files;
 	QTemporaryFile *remoteLastSyncTmp;
 

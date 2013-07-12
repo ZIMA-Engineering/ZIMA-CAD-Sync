@@ -4,6 +4,8 @@
 
 #include "FtpSynchronizer.h"
 
+#define TRANSFER_QUEUE_SIZE 20
+
 FtpSynchronizer::FtpSynchronizer(QObject *parent) :
 	BaseSynchronizer(parent),
 	action(None),
@@ -268,6 +270,8 @@ void FtpSynchronizer::downloadCommandFinished(int id, bool error)
 		it->fd->close();
 
 	lastDone = 0;
+
+	downloadBatch();
 	//emit fileTransferProgress(++filesDone, filesTotal);
 }
 
@@ -283,6 +287,7 @@ void FtpSynchronizer::uploadCommandFinished(int id, bool error)
 	}
 
 	Item *it = files.take(id);
+	itemsToTransfer.removeOne(it);
 
 	qDebug() << "Command finished" << it->fileName << it->targetPath << it->isDir << error;
 
@@ -291,18 +296,11 @@ void FtpSynchronizer::uploadCommandFinished(int id, bool error)
 		qDebug() << "Error occured:" << ftp->errorString();
 		qDebug() << "Go on, shit happens..";
 
-		if(!ftp->hasPendingCommands() && !files.empty())
+		if(!ftp->hasPendingCommands() && !itemsToTransfer.empty())
 		{
-			QMap<int, Item*> tmp = files;
 			files.clear();
 
-			foreach(Item *i, tmp)
-			{
-				if(i->isDir)
-					files[ ftp->mkdir(i->targetPath) ] = i;
-				else
-					files[ ftp->put(i->fd, i->targetPath) ] = i;
-			}
+			uploadBatch();
 		}
 	}
 
@@ -449,6 +447,10 @@ void FtpSynchronizer::initDownload()
 	connectToServer();
 
 	downloadTree(rootItem);
+
+	downloadBatch();
+
+	qDebug() << "Downloading" << filesTotal << "files";
 }
 
 void FtpSynchronizer::initUpload()
@@ -458,6 +460,8 @@ void FtpSynchronizer::initUpload()
 	connectToServer();
 
 	uploadDir(localDir, remoteDir);
+
+	uploadBatch();
 }
 
 void FtpSynchronizer::downloadTree(Item *it)
@@ -489,14 +493,39 @@ void FtpSynchronizer::downloadTree(Item *it)
 			if((it->localPath == localDir && !syncCadData) || (child->localPath == (localDir + "/" + DIRECTORY_CONFIG_PATH)))
 				continue;
 
-			child->fd = new QFile(child->localPath);
-			child->fd->open(QIODevice::WriteOnly);
-
 			totalFileSize += child->size / 1024;
 
-			files[ ftp->get(child->targetPath, child->fd) ] = child;
 			filesTotal++;
+
+			itemsToTransfer << child;
 		}
+	}
+}
+
+void FtpSynchronizer::downloadBatch()
+{
+	int dlCnt = files.count();
+	int queueCnt = itemsToTransfer.count();
+	int n;
+
+	if(queueCnt <= 0)
+		return;
+
+	if(dlCnt > 0)
+		n = TRANSFER_QUEUE_SIZE - dlCnt;
+	else
+		n = queueCnt > TRANSFER_QUEUE_SIZE ? TRANSFER_QUEUE_SIZE : queueCnt;
+
+	for(int i = 0; i < n; i++)
+	{
+		Item *it = itemsToTransfer.takeFirst();
+
+		it->fd = new QFile(it->localPath);
+		it->fd->open(QIODevice::WriteOnly);
+
+		qDebug() << "Download" << it->localPath;
+
+		files[ ftp->get(it->targetPath, it->fd) ] = it;
 	}
 }
 
@@ -542,13 +571,47 @@ void FtpSynchronizer::uploadDir(QString path, QString targetPath)
 			it->isDir = false;
 			it->fileName = i.absoluteFilePath();
 			it->targetPath = targetPath + "/" + i.fileName();
-			it->fd = new QFile(i.absoluteFilePath());
-			it->fd->open(QIODevice::ReadOnly);
 
-			totalFileSize += it->fd->size() / 1024;
+			totalFileSize += i.size() / 1024;
+
+			filesTotal++;
+
+			itemsToTransfer << it;
+		}
+	}
+}
+
+void FtpSynchronizer::uploadBatch()
+{
+	int upCnt = files.count();
+	int queueCnt = itemsToTransfer.count();
+	int n;
+
+	if(queueCnt <= 0)
+		return;
+
+	if(upCnt > 0)
+		n = TRANSFER_QUEUE_SIZE - upCnt;
+	else
+		n = queueCnt > TRANSFER_QUEUE_SIZE ? TRANSFER_QUEUE_SIZE : queueCnt;
+
+	for(int i = 0; i < n; i++)
+	{
+		Item *it = itemsToTransfer.at(i);
+
+		if(it->isDir)
+			files[ ftp->mkdir(it->targetPath) ] = it;
+
+		else {
+			if(!it->fd)
+			{
+				it->fd = new QFile(it->fileName);
+				it->fd->open(QIODevice::ReadOnly);
+			}
+
+			qDebug() << "Upload" << it->fileName;
 
 			files[ ftp->put(it->fd, it->targetPath) ] = it;
-			filesTotal++;
 		}
 	}
 }

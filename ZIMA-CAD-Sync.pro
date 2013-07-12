@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui network
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = ZIMA-CAD-Sync
 TEMPLATE = app
@@ -45,4 +46,3 @@ OTHER_FILES += \
     AUTHORS \
     LICENSE \
     README
-

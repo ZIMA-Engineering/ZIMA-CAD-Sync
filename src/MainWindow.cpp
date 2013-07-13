@@ -335,6 +335,18 @@ void MainWindow::reportError(QString err)
 
 void MainWindow::sendByMail()
 {
+	QString tbPath = settingsDlg->tbPath();
+
+	if(tbPath.isEmpty())
+	{
+		QMessageBox::warning(this, tr("Configure Thunderbird"), tr("Please first configure Thunderbird executable."));
+		return;
+
+	} else if(!QFile::exists(tbPath)) {
+		QMessageBox::warning(this, tr("File not found"), tr("Thunderbird executable '%1' not found.").arg(tbPath));
+		return;
+	}
+
 	QString tmpPath = QDir::tempPath() + "/" + currentDirName + ".zip";
 	QFile inFile(QDir::tempPath() + "/" + currentDirName + ".zima-cad-sync.ini");
 
@@ -372,5 +384,6 @@ void MainWindow::sendByMail()
 	args << "-compose";
 	args << QString("attachment=%1").arg(QUrl::fromLocalFile(tmpPath).toString());
 
-	qDebug() << "Start Thunderbird" << QProcess::execute(settingsDlg->tbPath(), args) << args;
+	if(QProcess::execute(tbPath, args) != 0)
+		QMessageBox::warning(this, tr("Failed to open Thunderbird"), tr("An attempt to open Thunderbird failed. Please check that you have configured the correct path."));
 }

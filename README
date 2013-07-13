@@ -4,11 +4,13 @@ ZIMA-CAD-Sync
 Requirements
 ------------
 Qt 4.x - modules core, gui and network, qmake
+QuaZIP - http://quazip.sourceforge.net/
+Thunderbird for the feature "Send by mail" to work
 
 Installation
 ------------
-  tar xzf ZIMA-CAD-Sync-1.0.0-src.tar.gz
-  cd ZIMA-CAD-Sync-1.0.0-src
+  tar xzf ZIMA-CAD-Sync-1.2.0-src.tar.gz
+  cd ZIMA-CAD-Sync-1.2.0-src
   qmake
   make
 

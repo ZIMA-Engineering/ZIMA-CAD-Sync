@@ -77,7 +77,7 @@
     <item>
      <widget class="QCheckBox" name="syncCadDataCheckBox">
       <property name="text">
-       <string>Sync CAD data</string>
+       <string>Copy CAD data</string>
       </property>
      </widget>
     </item>

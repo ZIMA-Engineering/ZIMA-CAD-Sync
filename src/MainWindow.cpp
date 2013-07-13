@@ -3,6 +3,10 @@
 #include <QDebug>
 #include <QListWidgetItem>
 #include <QMessageBox>
+#include <QProcess>
+#include <QUrl>
+#include <quazip/quazip.h>
+#include <quazip/quazipfile.h>
 
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
@@ -28,6 +32,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	settingsDlg = new SettingsDialog(this);
 	connect(ui->settingsButton, SIGNAL(clicked()), this, SLOT(openSettings()));
+
+	connect(ui->mailButton, SIGNAL(clicked()), this, SLOT(sendByMail()));
 
 	syncer = new FtpSynchronizer(this);
 
@@ -84,7 +90,9 @@ void MainWindow::setDirectory(QString path)
 
 	QDir d(path);
 
-	ui->dirNameLabel->setText("<h1>" + d.dirName() + "</h1>");
+	currentDirName = d.dirName();
+
+	ui->dirNameLabel->setText("<h1>" + currentDirName + "</h1>");
 	settingsDlg->setCurrentDirectory(path);
 
 	syncer->setLocalDir(path);
@@ -323,4 +331,46 @@ void MainWindow::setDirectoryLabel(QString label)
 void MainWindow::reportError(QString err)
 {
 	QMessageBox::warning(this, tr("Error occured"), err);
+}
+
+void MainWindow::sendByMail()
+{
+	QString tmpPath = QDir::tempPath() + "/" + currentDirName + ".zip";
+	QFile inFile(QDir::tempPath() + "/" + currentDirName + ".zima-cad-sync.ini");
+
+	QSettings *cfg = new QSettings(inFile.fileName(), QSettings::IniFormat);
+	cfg->beginGroup("Sync");
+
+	cfg->setValue("Host", syncer->getServer());
+	cfg->setValue("Username", syncer->getUsername());
+	cfg->setValue("Password", syncer->getPassword());
+	cfg->setValue("RemoteDir", syncer->getRemotePath());
+//	cfg->setValue("SyncCadData", ui->syncCadDataCheckBox->isChecked());
+
+	cfg->endGroup();
+	cfg->sync();
+
+	delete cfg;
+
+	QuaZip zip(tmpPath);
+	zip.open(QuaZip::mdCreate);
+
+	QuaZipFile outFile(&zip);
+
+	inFile.open(QIODevice::ReadOnly);
+
+	outFile.open(QIODevice::WriteOnly, QuaZipNewInfo(currentDirName + "/" DIRECTORY_CONFIG_PATH));
+	outFile.write(inFile.readAll());
+
+	inFile.close();
+	outFile.close();
+	zip.close();
+
+	QFile::remove(inFile.fileName());
+
+	QStringList args;
+	args << "-compose";
+	args << QString("attachment=%1").arg(QUrl::fromLocalFile(tmpPath).toString());
+
+	qDebug() << "Start Thunderbird" << QProcess::execute(settingsDlg->tbPath(), args) << args;
 }

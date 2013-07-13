@@ -17,6 +17,7 @@ public:
 	explicit SettingsDialog(QWidget *parent = 0);
 	~SettingsDialog();
 	QString zimaPtcCleanerPath();
+	QString tbPath();
 	void setCurrentDirectory(QString dir);
 	void saveSettings();
 
@@ -25,6 +26,7 @@ public slots:
 
 private slots:
 	void showPtcCleanerPathDialog();
+	void showTbPathDialog();
 	void saveButtonClicked();
 	void autoConfigSubdirectories();
 #ifdef Q_OS_WIN32

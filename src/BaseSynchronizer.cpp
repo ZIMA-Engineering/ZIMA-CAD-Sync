@@ -13,6 +13,26 @@ BaseSynchronizer::BaseSynchronizer(QObject *parent) :
 {
 }
 
+QString BaseSynchronizer::getServer()
+{
+	return host;
+}
+
+QString BaseSynchronizer::getUsername()
+{
+	return username;
+}
+
+QString BaseSynchronizer::getPassword()
+{
+	return passwd;
+}
+
+QString BaseSynchronizer::getRemotePath()
+{
+	return remoteDir;
+}
+
 void BaseSynchronizer::setLocalDir(QString dir)
 {
 	localDir = dir;

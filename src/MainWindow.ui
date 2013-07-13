@@ -399,6 +399,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="mailButton">
+        <property name="text">
+         <string>Send by mail</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="aboutButton">
         <property name="text">
          <string>&amp;About...</string>

@@ -38,6 +38,7 @@ public slots:
 	void setDirectoryLogo(QPixmap logo, bool showText);
 	void setDirectoryLabel(QString label);
 	void reportError(QString err);
+	void sendByMail();
 
 private:
 	enum SyncDirection {
@@ -52,6 +53,7 @@ private:
 	QProgressBar *progressBar;
 	QList<QWidget*> widgetsToToggle;
 	SyncDirection syncDirection;
+	QString currentDirName;
 };
 
 #endif // MAINWINDOW_H

@@ -31,6 +31,10 @@ public:
 	};
 
 	explicit BaseSynchronizer(QObject *parent = 0);
+	QString getServer();
+	QString getUsername();
+	QString getPassword();
+	QString getRemotePath();
 	void setLocalDir(QString dir);
 	void setRemoteDir(QString dir);
 	void setServer(QString host);

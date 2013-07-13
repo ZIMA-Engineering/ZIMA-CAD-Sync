@@ -46,3 +46,5 @@ OTHER_FILES += \
     AUTHORS \
     LICENSE \
     README
+
+unix:!symbian|win32: LIBS += -lquazip

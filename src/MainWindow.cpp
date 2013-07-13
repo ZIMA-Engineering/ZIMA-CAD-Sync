@@ -63,11 +63,12 @@ MainWindow::MainWindow(QWidget *parent) :
 			<< ui->settingsButton
 			<< ui->filterListWidget
 			<< ui->syncCadDataCheckBox
+			<< ui->removeCadDataCheckBox
 			<< ui->syncToLocalButton
 			<< ui->syncToServerButton
-			<< ui->remoteRemoteAllCheckBox
+			<< ui->remoteDeleteComboBox
 			<< ui->serverClearCheckbox
-			<< ui->localRemoveFirstCheckBox
+			<< ui->localDeleteComboBox
 			<< ui->localCleanCheckBox
 			<< ui->diffDirGroupBox;
 }
@@ -162,7 +163,7 @@ void MainWindow::sync()
 		}
 	}
 
-	syncer->setDeleteFirst( syncDirection == ToLocal ? ui->localRemoveFirstCheckBox->isChecked() : ui->remoteRemoteAllCheckBox->isChecked() );
+	syncer->setDeleteFirst( (BaseSynchronizer::Delete) (syncDirection == ToLocal ? ui->localDeleteComboBox->currentIndex() : ui->remoteDeleteComboBox->currentIndex()) );
 
 	QList<SyncItem*> syncItems;
 	int cnt = ui->filterListWidget->count();
@@ -183,6 +184,7 @@ void MainWindow::sync()
 	qDeleteAll(syncItems);
 
 	syncer->setSyncCadData(ui->syncCadDataCheckBox->isChecked());
+	syncer->setDeleteCadData(ui->removeCadDataCheckBox->isChecked());
 
 	if(syncDirection == ToLocal)
 		syncer->syncToLocal();

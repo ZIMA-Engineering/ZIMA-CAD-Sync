@@ -24,14 +24,21 @@ class BaseSynchronizer : public QObject
 {
 	Q_OBJECT
 public:
+	enum Delete {
+		No,
+		DeleteSelected,
+		DeleteAll
+	};
+
 	explicit BaseSynchronizer(QObject *parent = 0);
 	void setLocalDir(QString dir);
 	void setRemoteDir(QString dir);
 	void setServer(QString host);
 	void setUsername(QString username);
 	void setPassword(QString passwd);
-	void setDeleteFirst(bool del);
+	void setDeleteFirst(Delete del);
 	void setSyncCadData(bool sync);
+	void setDeleteCadData(bool del);
 	QList<SyncItem*> syncItems();
 	virtual void fetchLocalDirectoryConfig();
 	virtual void saveLocalDirectoryConfig(bool pass, QList<SyncItem*> syncItems, bool cadData);
@@ -65,9 +72,11 @@ protected:
 	QString username;
 	QString passwd;
 	QDateTime localLastSync;
-	bool deleteFirst;
+	Delete deleteFirst;
 	bool syncCadData;
+	bool deleteCadData;
 	QStringList exclude;
+	QStringList include;
 	
 };
 

@@ -40,8 +40,18 @@ void FtpSynchronizer::syncToLocal()
 
 	actions << BuildingTree << Downloading;
 
-	if(deleteFirst)
+	switch(deleteFirst)
+	{
+	case BaseSynchronizer::DeleteSelected:
+		localDeleteSelected(localDir);
+		break;
+
+	case BaseSynchronizer::DeleteAll:
 		localDeleteAll(localDir);
+		break;
+
+	default:break;
+	}
 
 	filesTotal = 0;
 	totalFileSizeDone = 0;
@@ -58,8 +68,19 @@ void FtpSynchronizer::syncToServer()
 	ftp->deleteLater();
 	ftp = 0;
 
-	if(deleteFirst)
+
+	switch(deleteFirst)
+	{
+	case BaseSynchronizer::DeleteSelected:
+		actions << BuildingTree << RemovingSelected;
+		break;
+
+	case BaseSynchronizer::DeleteAll:
 		actions << BuildingTree << RemovingAll;
+		break;
+
+	default:break;
+	}
 
 	actions << Uploading << SettingLastSync;
 
@@ -120,6 +141,10 @@ void FtpSynchronizer::cmdFromQueue()
 		qDebug() << "Init build tree";
 		buildRemoteTree();
 		break;
+	case RemovingSelected:
+		qDebug() << "Init remove selected";
+		connectToServer();
+		remoteDeleteSelected();
 	case RemovingAll:
 		qDebug() << "Init remove all";
 		connectToServer();
@@ -296,12 +321,9 @@ void FtpSynchronizer::uploadCommandFinished(int id, bool error)
 		qDebug() << "Error occured:" << ftp->errorString();
 		qDebug() << "Go on, shit happens..";
 
-		if(!ftp->hasPendingCommands() && !itemsToTransfer.empty())
-		{
-			files.clear();
+//		if(!itemsToTransfer.empty())
+//			files.clear();
 
-			uploadBatch();
-		}
 	}
 
 	if(it->fd)
@@ -312,7 +334,9 @@ void FtpSynchronizer::uploadCommandFinished(int id, bool error)
 
 	delete it;
 
-	qDebug() << "Pending" << ftp->hasPendingCommands();
+	uploadBatch();
+
+	qDebug() << "Pending" << ftp->hasPendingCommands() << " queue size" << itemsToTransfer.size();
 }
 
 void FtpSynchronizer::lastSyncCommandFinished(int id, bool error)
@@ -388,6 +412,26 @@ void FtpSynchronizer::buildTreeListInfo(QUrlInfo i)
 	currentItem->children << it;
 }
 
+void FtpSynchronizer::localDeleteSelected(QString path)
+{
+	QDir dir(path);
+	QFileInfoList list = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::Files | QDir::Dirs);
+
+	foreach(QFileInfo i, list)
+	{
+		if(i.fileName() == DIRECTORY_CONFIG_DIR)
+			continue;
+
+		if(i.isDir() && include.contains(i.fileName()))
+			localDeleteAll(i.absoluteFilePath());
+
+		else if(i.isFile() && deleteCadData) {
+			qDebug() << "Remove file" << i.fileName();
+			dir.remove(i.absoluteFilePath());
+		}
+	}
+}
+
 void FtpSynchronizer::localDeleteAll(QString path)
 {
 	QDir dir(path);
@@ -408,6 +452,28 @@ void FtpSynchronizer::localDeleteAll(QString path)
 	}
 
 	dir.rmdir(path);
+}
+
+void FtpSynchronizer::remoteDeleteSelected(Item *it)
+{
+	if(!it)
+		it = rootItem;
+
+	foreach(Item *child, it->children)
+	{
+		if(child->isDir)
+		{
+			if(include.contains(child->fileName))
+				remoteDeleteAll(child);
+
+		} else if(deleteCadData) {
+			qDebug() << "Remove" << child->targetPath;
+			ftp->remove(child->targetPath);
+		}
+	}
+
+	if(it->targetPath == remoteDir)
+		return;
 }
 
 void FtpSynchronizer::remoteDeleteAll(Item *it)
@@ -506,14 +572,16 @@ void FtpSynchronizer::downloadBatch()
 {
 	int dlCnt = files.count();
 	int queueCnt = itemsToTransfer.count();
-	int n;
+	int n, tmp;
 
 	if(queueCnt <= 0)
 		return;
 
 	if(dlCnt > 0)
-		n = TRANSFER_QUEUE_SIZE - dlCnt;
-	else
+	{
+		tmp = TRANSFER_QUEUE_SIZE - dlCnt;
+		n = queueCnt > tmp ? tmp : queueCnt;
+	} else
 		n = queueCnt > TRANSFER_QUEUE_SIZE ? TRANSFER_QUEUE_SIZE : queueCnt;
 
 	for(int i = 0; i < n; i++)
@@ -545,7 +613,7 @@ void FtpSynchronizer::uploadDir(QString path, QString targetPath)
 	it->fileName = targetPath;
 	it->targetPath = targetPath;
 
-	files[ ftp->mkdir(targetPath) ] = it;
+	itemsToTransfer << it;
 
 	foreach(QFileInfo i, list)
 	{
@@ -562,7 +630,7 @@ void FtpSynchronizer::uploadDir(QString path, QString targetPath)
 			if(path == localDir && !syncCadData)
 				continue;
 
-			qDebug() << "Upload file" << i.fileName();
+			qDebug() << "Upload file" << i.absoluteFilePath();
 
 			if(dir.dirName() == DIRECTORY_CONFIG_DIR && i.fileName() == DIRECTORY_CONFIG_FILE)
 				continue;
@@ -585,14 +653,16 @@ void FtpSynchronizer::uploadBatch()
 {
 	int upCnt = files.count();
 	int queueCnt = itemsToTransfer.count();
-	int n;
+	int n, tmp;
 
 	if(queueCnt <= 0)
 		return;
 
 	if(upCnt > 0)
-		n = TRANSFER_QUEUE_SIZE - upCnt;
-	else
+	{
+		tmp = TRANSFER_QUEUE_SIZE - upCnt;
+		n = queueCnt > tmp ? tmp : queueCnt;
+	} else
 		n = queueCnt > TRANSFER_QUEUE_SIZE ? TRANSFER_QUEUE_SIZE : queueCnt;
 
 	for(int i = 0; i < n; i++)

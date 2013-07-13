@@ -8,8 +8,9 @@
 
 BaseSynchronizer::BaseSynchronizer(QObject *parent) :
 	QObject(parent),
-	deleteFirst(false),
-	syncCadData(true)
+	deleteFirst(BaseSynchronizer::No),
+	syncCadData(true),
+	deleteCadData(false)
 {
 }
 
@@ -38,7 +39,7 @@ void BaseSynchronizer::setPassword(QString passwd)
 	this->passwd = passwd;
 }
 
-void BaseSynchronizer::setDeleteFirst(bool del)
+void BaseSynchronizer::setDeleteFirst(BaseSynchronizer::Delete del)
 {
 	deleteFirst = del;
 }
@@ -46,6 +47,11 @@ void BaseSynchronizer::setDeleteFirst(bool del)
 void BaseSynchronizer::setSyncCadData(bool sync)
 {
 	syncCadData = sync;
+}
+
+void BaseSynchronizer::setDeleteCadData(bool del)
+{
+	deleteCadData = del;
 }
 
 void BaseSynchronizer::setServerInfo(QString host, QString username, QString passwd, QString remoteDir)
@@ -236,5 +242,7 @@ void BaseSynchronizer::applyFilters(QList<SyncItem*> syncItems)
 	{
 		if(!i->sync)
 			exclude << i->name;
+		else
+			include << i->name;
 	}
 }

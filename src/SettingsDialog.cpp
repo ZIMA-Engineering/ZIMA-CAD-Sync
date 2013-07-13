@@ -82,13 +82,22 @@ void SettingsDialog::saveButtonClicked()
 
 void SettingsDialog::autoConfigSubdirectories()
 {
-	QDir d(currentDir);
+	configureSubdirectory(currentDir, ui->directoryOnServerLineEdit->text());
+
+	QMessageBox::information(this, tr("Subdirectories configured"), tr("All subdirectories were successfully configured."));
+}
+
+void SettingsDialog::configureSubdirectory(QString path, QString remoteBasePath)
+{
+	QDir d(path);
 	QFileInfoList subdirs = d.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
 
 	foreach(QFileInfo subdir, subdirs)
 	{
 		if(subdir.fileName() == DIRECTORY_CONFIG_DIR)
 			continue;
+
+		QString remotePath = remoteBasePath + "/" + subdir.fileName();
 
 		d.mkpath(subdir.absoluteFilePath() + "/" + DIRECTORY_CONFIG_DIR);
 
@@ -101,12 +110,12 @@ void SettingsDialog::autoConfigSubdirectories()
 		if(ui->savePassSubdirCheckBox->isChecked())
 			cfg.setValue("Password", ui->passwordLineEdit->text());
 
-		cfg.setValue("RemoteDir", ui->directoryOnServerLineEdit->text());
+		cfg.setValue("RemoteDir", remotePath);
 
 		cfg.endGroup();
-	}
 
-	QMessageBox::information(this, tr("Subdirectories configured"), tr("All subdirectories were successfully configured."));
+		configureSubdirectory(subdir.absoluteFilePath(), remotePath);
+	}
 }
 
 void SettingsDialog::directoryConfigRead(QString host, QString username, QString passwd, QString remoteDir)

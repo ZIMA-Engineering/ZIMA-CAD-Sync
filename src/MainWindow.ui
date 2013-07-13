@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>540</width>
-    <height>757</height>
+    <width>536</width>
+    <height>758</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -82,6 +82,13 @@
      </widget>
     </item>
     <item>
+     <widget class="QCheckBox" name="removeCadDataCheckBox">
+      <property name="text">
+       <string>Remove CAD data and copy anew</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLabel" name="label">
       <property name="text">
        <string>Checked directories will be synced</string>
@@ -142,10 +149,22 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <widget class="QCheckBox" name="remoteRemoteAllCheckBox">
-           <property name="text">
-            <string>Remove everything and copy anew</string>
-           </property>
+          <widget class="QComboBox" name="remoteDeleteComboBox">
+           <item>
+            <property name="text">
+             <string>Copy</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Remove selected and copy anew</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Remove everything and copy anew</string>
+            </property>
+           </item>
           </widget>
          </item>
          <item>
@@ -276,10 +295,22 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="localRemoveFirstCheckBox">
-           <property name="text">
-            <string>Remove everything and copy anew</string>
-           </property>
+          <widget class="QComboBox" name="localDeleteComboBox">
+           <item>
+            <property name="text">
+             <string>Copy</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Remove selected and copy anew</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Remove everything and copy anew</string>
+            </property>
+           </item>
           </widget>
          </item>
          <item>

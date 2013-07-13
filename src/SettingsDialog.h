@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QSettings>
+#include <QDir>
 
 namespace Ui {
 class SettingsDialog;
@@ -27,7 +28,7 @@ private slots:
 	void saveButtonClicked();
 	void autoConfigSubdirectories();
 #ifdef Q_OS_WIN32
-    void enableSystemContextMenuChanged(bool checked);
+	void enableSystemContextMenuChanged(bool checked);
 #endif
 	
 private:
@@ -35,8 +36,10 @@ private:
 	QSettings *settings;
 	QString currentDir;
 #ifdef Q_OS_WIN32
-    QSettings *contextMenuSettings;
+	QSettings *contextMenuSettings;
 #endif
+
+	void configureSubdirectory(QString path, QString remoteBasePath);
 
 signals:
     void serverInfoChanged(QString host, QString username, QString passwd, QString remoteDir);

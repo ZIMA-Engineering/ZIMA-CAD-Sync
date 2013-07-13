@@ -30,6 +30,7 @@ private:
 		None = 0,
 		Checking,
 		BuildingTree,
+		RemovingSelected,
 		RemovingAll,
 		Uploading,
 		Downloading,
@@ -39,7 +40,9 @@ private:
 	void connectToServer();
 	void initCheck();
 	void buildRemoteTree();
+	void localDeleteSelected(QString path);
 	void localDeleteAll(QString path);
+	void remoteDeleteSelected(Item *it = 0);
 	void remoteDeleteAll(Item *it = 0);
 	void initDownload();
 	void initUpload();

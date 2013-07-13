@@ -9,8 +9,7 @@
 BaseSynchronizer::BaseSynchronizer(QObject *parent) :
 	QObject(parent),
 	deleteFirst(BaseSynchronizer::No),
-	syncCadData(true),
-	deleteCadData(false)
+	syncCadData(true)
 {
 }
 
@@ -47,11 +46,6 @@ void BaseSynchronizer::setDeleteFirst(BaseSynchronizer::Delete del)
 void BaseSynchronizer::setSyncCadData(bool sync)
 {
 	syncCadData = sync;
-}
-
-void BaseSynchronizer::setDeleteCadData(bool del)
-{
-	deleteCadData = del;
 }
 
 void BaseSynchronizer::setServerInfo(QString host, QString username, QString passwd, QString remoteDir)

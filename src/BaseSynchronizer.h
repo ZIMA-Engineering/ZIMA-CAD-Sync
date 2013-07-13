@@ -38,7 +38,6 @@ public:
 	void setPassword(QString passwd);
 	void setDeleteFirst(Delete del);
 	void setSyncCadData(bool sync);
-	void setDeleteCadData(bool del);
 	QList<SyncItem*> syncItems();
 	virtual void fetchLocalDirectoryConfig();
 	virtual void saveLocalDirectoryConfig(bool pass, QList<SyncItem*> syncItems, bool cadData);
@@ -74,7 +73,6 @@ protected:
 	QDateTime localLastSync;
 	Delete deleteFirst;
 	bool syncCadData;
-	bool deleteCadData;
 	QStringList exclude;
 	QStringList include;
 	

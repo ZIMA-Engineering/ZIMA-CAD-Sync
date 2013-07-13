@@ -425,7 +425,7 @@ void FtpSynchronizer::localDeleteSelected(QString path)
 		if(i.isDir() && include.contains(i.fileName()))
 			localDeleteAll(i.absoluteFilePath());
 
-		else if(i.isFile() && deleteCadData) {
+		else if(i.isFile() && syncCadData) {
 			qDebug() << "Remove file" << i.fileName();
 			dir.remove(i.absoluteFilePath());
 		}
@@ -466,7 +466,7 @@ void FtpSynchronizer::remoteDeleteSelected(Item *it)
 			if(include.contains(child->fileName))
 				remoteDeleteAll(child);
 
-		} else if(deleteCadData) {
+		} else if(syncCadData) {
 			qDebug() << "Remove" << child->targetPath;
 			ftp->remove(child->targetPath);
 		}

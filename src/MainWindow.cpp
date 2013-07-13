@@ -63,7 +63,6 @@ MainWindow::MainWindow(QWidget *parent) :
 			<< ui->settingsButton
 			<< ui->filterListWidget
 			<< ui->syncCadDataCheckBox
-			<< ui->removeCadDataCheckBox
 			<< ui->syncToLocalButton
 			<< ui->syncToServerButton
 			<< ui->remoteDeleteComboBox
@@ -184,7 +183,6 @@ void MainWindow::sync()
 	qDeleteAll(syncItems);
 
 	syncer->setSyncCadData(ui->syncCadDataCheckBox->isChecked());
-	syncer->setDeleteCadData(ui->removeCadDataCheckBox->isChecked());
 
 	if(syncDirection == ToLocal)
 		syncer->syncToLocal();

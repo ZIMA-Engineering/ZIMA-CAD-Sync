@@ -384,6 +384,5 @@ void MainWindow::sendByMail()
 	args << "-compose";
 	args << QString("attachment=%1").arg(QUrl::fromLocalFile(tmpPath).toString());
 
-	if(QProcess::execute(tbPath, args) != 0)
-		QMessageBox::warning(this, tr("Failed to open Thunderbird"), tr("An attempt to open Thunderbird failed. Please check that you have configured the correct path."));
+	QProcess::execute(tbPath, args);
 }

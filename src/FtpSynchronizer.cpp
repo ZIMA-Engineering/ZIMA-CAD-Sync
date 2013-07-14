@@ -257,9 +257,9 @@ void FtpSynchronizer::buildTreeCommandFinished(int id, bool error)
 
 	if(error)
 	{
-		qDebug() << "Error occured, we're screwed" << ftp->errorString();
-		emit errorOccured(tr("Unable to download files\n\n") + ftp->errorString());
-		return;
+		qDebug() << "Error occured, dont die" << ftp->errorString();
+//		emit errorOccured(tr("Unable to download files\n\n") + ftp->errorString());
+//		return;
 	}
 
 	if(!dirsToList.empty())
@@ -517,6 +517,9 @@ void FtpSynchronizer::initDownload()
 	downloadBatch();
 
 	qDebug() << "Downloading" << filesTotal << "files";
+
+	if(filesTotal == 0)
+		commandSequenceDone(false);
 }
 
 void FtpSynchronizer::initUpload()
@@ -528,6 +531,9 @@ void FtpSynchronizer::initUpload()
 	uploadDir(localDir, remoteDir);
 
 	uploadBatch();
+
+	if(filesTotal == 0)
+		commandSequenceDone(false);
 }
 
 void FtpSynchronizer::downloadTree(Item *it)

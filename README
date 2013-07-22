@@ -3,7 +3,7 @@ ZIMA-CAD-Sync
 
 Requirements
 ------------
-Qt 4.x - modules core, gui and network, qmake
+Qt 4.x, 5.x - modules core, gui and network (widgets, ftp), qmake
 QuaZIP - http://quazip.sourceforge.net/
 Thunderbird for the feature "Send by mail" to work
 

@@ -2,10 +2,15 @@
 #define FTPSYNCHRONIZER_H
 
 #include <QObject>
-#include <QFtp>
 #include <QMap>
 #include <QFile>
 #include <QTemporaryFile>
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+	#include <qftp.h>
+#else
+	#include <QFtp>
+#endif
 
 #include "BaseSynchronizer.h"
 #include "Item.h"

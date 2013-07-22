@@ -1,0 +1,6 @@
+# building quazip
+qmake INCLUDEPATH+=C:/QtSDK/QtSources/4.8.1/src/3rdparty/zlib
+
+# building zima-cad-sync
+qmake INCLUDEPATH+=C:/quazip-0.5.1 INCLUDEPATH+=C:/QtSDK/QtSources/4.8.1/src/3rdparty/zlib LIBS+=-LC:/quazip-0.5.1/quazip/release
+qmake INCLUDEPATH+=C:/quazip-0.5.1 INCLUDEPATH+=C:/Qt/5.1.0/Src/qtbase/src/3rdparty/zlib INCLUDEPATH+=C:/qt-qtftp/src/qftp LIBS+=-LC:/quazip-0.5.1/quazip/release

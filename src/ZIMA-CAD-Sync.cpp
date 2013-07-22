@@ -12,8 +12,11 @@ int main(int argc, char *argv[])
 	QCoreApplication::setOrganizationDomain("zima-engineering.cz");
 	QCoreApplication::setApplicationName("ZIMA-CAD-Sync");
 
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 	QTextCodec::setCodecForTr(QTextCodec::codecForName("utf8"));
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf8"));
+#endif
+
 	QTextCodec::setCodecForLocale(QTextCodec::codecForName("utf8"));
 
 	QApplication a(argc, argv);

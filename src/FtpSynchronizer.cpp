@@ -312,7 +312,6 @@ void FtpSynchronizer::uploadCommandFinished(int id, bool error)
 	}
 
 	Item *it = files.take(id);
-	itemsToTransfer.removeOne(it);
 
 	qDebug() << "Command finished" << it->fileName << it->targetPath << it->isDir << error;
 
@@ -673,19 +672,17 @@ void FtpSynchronizer::uploadBatch()
 
 	for(int i = 0; i < n; i++)
 	{
-		Item *it = itemsToTransfer.at(i);
+		Item *it = itemsToTransfer.takeFirst();
 
-		if(it->isDir)
+		if(it->isDir) {
 			files[ ftp->mkdir(it->targetPath) ] = it;
 
-		else {
+		} else {
 			if(!it->fd)
 			{
 				it->fd = new QFile(it->fileName);
 				it->fd->open(QIODevice::ReadOnly);
 			}
-
-			qDebug() << "Upload" << it->fileName;
 
 			files[ ftp->put(it->fd, it->targetPath) ] = it;
 		}
@@ -704,7 +701,7 @@ void FtpSynchronizer::dataTransferProgress(qint64 done, qint64 total)
 
 void FtpSynchronizer::stateChange(int state)
 {
-	qDebug() << "State is" << state;
+	qDebug() << "i" << state;
 }
 
 void FtpSynchronizer::ftpCommandFinished(int id, bool error)

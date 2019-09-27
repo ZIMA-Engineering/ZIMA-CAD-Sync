@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 	paths
 			<< filename
 			<< QApplication::applicationDirPath() + "/" + filename
+			<< QApplication::applicationDirPath() + "/locale/" + filename
 			<< ("locale/" + filename)
 			<< (":/" + filename);
 
